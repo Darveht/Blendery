@@ -338,6 +338,22 @@ document.addEventListener('DOMContentLoaded', function() {
         newPasswordInput.addEventListener('input', validatePassword);
     }
     
+    // Setup character counter for text posts
+    const textPostInput = document.getElementById('textPostDescription');
+    if (textPostInput) {
+        textPostInput.addEventListener('input', function() {
+            const charCount = this.value.length;
+            const charCountElement = document.getElementById('charCount');
+            charCountElement.textContent = charCount;
+            
+            if (charCount < 200) {
+                charCountElement.parentElement.classList.add('warning');
+            } else {
+                charCountElement.parentElement.classList.remove('warning');
+            }
+        });
+    }
+    
     // Add input focus animations
     const inputs = document.querySelectorAll('input');
     inputs.forEach(input => {
@@ -366,15 +382,34 @@ document.addEventListener('DOMContentLoaded', function() {
 function likePost(element) {
     const heartIcon = element.querySelector('i');
     const countSpan = element.querySelector('span');
+    let count = parseInt(countSpan.textContent) || 0;
     
-    if (heartIcon.classList.contains('fas')) {
+    if (element.classList.contains('liked')) {
+        element.classList.remove('liked');
         heartIcon.classList.remove('fas');
         heartIcon.classList.add('far');
-        element.style.color = '#666';
+        count--;
     } else {
+        element.classList.add('liked');
         heartIcon.classList.remove('far');
         heartIcon.classList.add('fas');
-        element.style.color = '#ff6b6b';
+        count++;
+    }
+    
+    countSpan.textContent = count;
+}
+
+function sharePost(element) {
+    // Simular compartir
+    if (navigator.share) {
+        navigator.share({
+            title: 'Publicación de Blendery',
+            text: 'Mira esta publicación en Blendery',
+            url: window.location.href
+        });
+    } else {
+        // Fallback para navegadores que no soportan Web Share API
+        alert('¡Publicación compartida!');
     }
 }
 
@@ -384,8 +419,93 @@ function viewStory(username) {
 }
 
 // Create post functionality
-function createPost() {
-    alert('Función de crear post próximamente...');
+function showCreatePostScreen() {
+    hideAllScreens();
+    document.getElementById('createPostScreen').classList.add('active');
+    
+    // Reset form
+    document.getElementById('textPostDescription').value = '';
+    document.getElementById('charCount').textContent = '0';
+    document.getElementById('textLocationText').textContent = 'Agregar ubicación';
+}
+
+function publishTextPost() {
+    const description = document.getElementById('textPostDescription').value;
+    
+    if (description.length < 200) {
+        alert('La descripción debe tener al menos 200 caracteres.');
+        return;
+    }
+    
+    showLoadingSpinner('Publicando...');
+    
+    setTimeout(() => {
+        hideLoadingSpinner();
+        showMainScreen();
+        
+        // Agregar la nueva publicación al feed
+        addTextPostToFeed(description);
+        
+        // Limpiar formulario
+        document.getElementById('textPostDescription').value = '';
+        document.getElementById('charCount').textContent = '0';
+    }, 2000);
+}
+
+function addTextPostToFeed(description) {
+    const postSection = document.querySelector('.post-section');
+    const newPost = document.createElement('div');
+    newPost.className = 'post';
+    newPost.innerHTML = `
+        <div class="post-header">
+            <div class="user-info">
+                <div class="user-avatar" style="background: linear-gradient(45deg, #667eea, #764ba2);"></div>
+                <div class="user-details">
+                    <h4>Tú</h4>
+                    <span>Ahora</span>
+                </div>
+            </div>
+            <i class="fas fa-ellipsis-h"></i>
+        </div>
+        <div class="post-content">
+            <p>${description}</p>
+        </div>
+        <div class="post-actions">
+            <button onclick="likePost(this)"><i class="far fa-heart"></i> <span>0</span></button>
+            <button onclick="sharePost(this)"><i class="fas fa-share"></i> <span>0</span></button>
+        </div>
+    `;
+    
+    // Insertar después del create-post
+    const createPost = document.querySelector('.create-post');
+    createPost.parentNode.insertBefore(newPost, createPost.nextSibling);
+}
+
+function addHashtagsToText() {
+    const textarea = document.getElementById('textPostDescription');
+    const currentText = textarea.value;
+    
+    if (!currentText.includes('#')) {
+        textarea.value = currentText + ' #';
+        textarea.focus();
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    }
+}
+
+function addLocationToText() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                document.getElementById('textLocationText').textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+            },
+            function(error) {
+                console.error('Error getting location:', error);
+                document.getElementById('textLocationText').textContent = 'Ubicación no disponible';
+            }
+        );
+    }
 }
 
 // Settings functionality
@@ -642,9 +762,8 @@ function addNewPostToFeed() {
             <img src="${document.getElementById('capturedImage').src}" style="width: 100%; border-radius: 12px; margin-bottom: 16px;">
         </div>
         <div class="post-actions">
-            <button><i class="fas fa-heart"></i> 0</button>
-            <button><i class="fas fa-comment"></i> 0</button>
-            <button><i class="fas fa-share"></i> 0</button>
+            <button onclick="likePost(this)"><i class="far fa-heart"></i> <span>0</span></button>
+            <button onclick="sharePost(this)"><i class="fas fa-share"></i> <span>0</span></button>
         </div>
     `;
     

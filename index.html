@@ -322,49 +322,17 @@
             <div class="main-content" id="mainContent">
                 <!-- Inicio Tab Content -->
                 <div class="tab-content active" id="homeContent">
-                    <div class="story-section">
-                        <div class="story-item">
-                            <div class="story-image" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4);"></div>
-                            <span>Ana</span>
-                        </div>
-                        <div class="story-item">
-                            <div class="story-image" style="background: linear-gradient(45deg, #667eea, #764ba2);"></div>
-                            <span>Carlos</span>
-                        </div>
-                        <div class="story-item">
-                            <div class="story-image" style="background: linear-gradient(45deg, #f093fb, #f5576c);"></div>
-                            <span>María</span>
-                        </div>
-                    </div>
-
                     <div class="post-section">
-                        <div class="create-post">
+                        <div class="create-post" onclick="showCreatePostScreen()">
                             <div class="user-avatar"></div>
-                            <input type="text" placeholder="¿Qué estás pensando?">
+                            <input type="text" placeholder="¿Qué quieres anotar?" readonly>
                             <i class="fas fa-image"></i>
                         </div>
 
-                        <!-- Posts -->
-                        <div class="post">
-                            <div class="post-header">
-                                <div class="user-info">
-                                    <div class="user-avatar" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4);"></div>
-                                    <div class="user-details">
-                                        <h4>Ana García</h4>
-                                        <span>Hace 2 horas</span>
-                                    </div>
-                                </div>
-                                <i class="fas fa-ellipsis-h"></i>
-                            </div>
-                            <div class="post-content">
-                                <p>¡Increíble día en la playa! 🏖️ #Verano #Playa</p>
-                                <div class="post-image" style="background: linear-gradient(45deg, #74b9ff, #0984e3);"></div>
-                            </div>
-                            <div class="post-actions">
-                                <button><i class="fas fa-heart"></i> 124</button>
-                                <button><i class="fas fa-comment"></i> 12</button>
-                                <button><i class="fas fa-share"></i> 5</button>
-                            </div>
+                        <div class="empty-state">
+                            <i class="fas fa-pen"></i>
+                            <h3>¡Comienza a compartir!</h3>
+                            <p>Comparte tus momentos y pensamientos con tus amigos</p>
                         </div>
                     </div>
                 </div>
@@ -469,15 +437,23 @@
                 <!-- Otros tabs content -->
                 <div class="tab-content" id="momentsContent">
                     <div class="story-section">
-                        <div class="story-item add-story">
+                        <div class="story-item add-story" onclick="openCamera()">
                             <div class="story-image">
                                 <i class="fas fa-plus"></i>
                             </div>
                             <span>Añadir momento</span>
                         </div>
-                        <div class="story-item">
+                        <div class="story-item" onclick="viewStory('Tu historia')">
                             <div class="story-image" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4);"></div>
                             <span>Tu momento</span>
+                        </div>
+                        <div class="story-item" onclick="viewStory('Amigo 1')">
+                            <div class="story-image" style="background: linear-gradient(45deg, #667eea, #764ba2);"></div>
+                            <span>Amigo 1</span>
+                        </div>
+                        <div class="story-item" onclick="viewStory('Amigo 2')">
+                            <div class="story-image" style="background: linear-gradient(45deg, #f093fb, #f5576c);"></div>
+                            <span>Amigo 2</span>
                         </div>
                     </div>
                     <div class="empty-state">
@@ -669,6 +645,60 @@
                 <button class="btn-secondary" onclick="saveToDrafts()">
                     <i class="fas fa-save"></i>
                     Guardar en borradores
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Post Screen -->
+    <div id="createPostScreen" class="screen">
+        <div class="post-creation-container">
+            <div class="post-creation-header">
+                <button class="back-btn" onclick="showMainScreen()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h2>Nueva Publicación</h2>
+                <button class="publish-btn" onclick="publishTextPost()">Publicar</button>
+            </div>
+
+            <div class="post-options">
+                <div class="option-item">
+                    <div class="option-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <div class="option-content">
+                        <textarea placeholder="¿Qué quieres compartir? (mínimo 200 caracteres)" id="textPostDescription" maxlength="2000"></textarea>
+                        <div class="character-count">
+                            <span id="charCount">0</span>/200 mínimo
+                        </div>
+                    </div>
+                </div>
+
+                <div class="option-item" onclick="addHashtagsToText()">
+                    <div class="option-icon">
+                        <i class="fas fa-hashtag"></i>
+                    </div>
+                    <div class="option-content">
+                        <span>Agregar hashtags</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="option-item" onclick="addLocationToText()">
+                    <div class="option-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="option-content">
+                        <span id="textLocationText">Agregar ubicación</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="post-actions">
+                <button class="btn-secondary" onclick="openCamera()">
+                    <i class="fas fa-camera"></i>
+                    Agregar foto/video
                 </button>
             </div>
         </div>

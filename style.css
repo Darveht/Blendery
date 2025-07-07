@@ -739,9 +739,7 @@ body {
     border-radius: 12px;
     margin-bottom: 16px;
 }
-.post-actions {
-    display: flex; gap: 24px;
-}
+/* Post interactions */
 .post-actions button {
     background: none;
     border: none;
@@ -750,9 +748,23 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 .post-actions button:hover {
     color: #FE2C55;
+}
+.post-actions button.liked {
+    color: #FE2C55;
+}
+.post-actions button.liked i {
+    animation: likeAnimation 0.6s ease;
+}
+
+@keyframes likeAnimation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
 }
 
 /* Empty State */
@@ -1346,4 +1358,14 @@ body {
         opacity: 1;
         transform: translateY(0);
     }
+}
+/* Character count */
+.character-count {
+    font-size: 0.8rem;
+    color: #A5A5A5;
+    margin-top: 8px;
+    text-align: right;
+}
+.character-count.warning {
+    color: #FE2C55;
 }
