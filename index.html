@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Blendery - Red Social Moderna</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+</head></html>
+<body>
+    <!-- Pantalla de Bienvenida -->
+    <div id="welcomeScreen" class="screen active">
+        <div class="welcome-container">
+            <div class="welcome-hero">
+                <div class="hero-content">
+                    <h1 class="hero-title">Blendery</h1>
+                    <p class="hero-subtitle">Comparte lo mejor que tienes de ti</p>
+                    <div class="hero-features">
+                        <div class="feature-item">
+                            <i class="fas fa-users"></i>
+                            <span>Conecta con amigos</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-share-alt"></i>
+                            <span>Comparte momentos</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-heart"></i>
+                            <span>Descubre contenido</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="welcome-actions">
+                <button class="btn-primary" onclick="showRegisterScreen()">
+                    <i class="fas fa-user-plus"></i>
+                    Crear cuenta
+                </button>
+                <button class="btn-secondary" onclick="showLoginScreen()">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Iniciar sesión
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla de Login -->
+    <div id="loginScreen" class="screen">
+        <div class="container">
+            <div class="header">
+                <button class="back-btn" onclick="showWelcomeScreen()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h2>Iniciar Sesión</h2>
+            </div>
+
+            <div class="form-container">
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" placeholder="Email o nombre de usuario" id="loginEmail">
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" placeholder="Contraseña" id="loginPassword">
+                </div>
+
+                <button class="btn-primary" onclick="showMainScreen()">Iniciar Sesión</button>
+
+                <a href="#" class="forgot-password" onclick="showForgotPasswordScreen()">¿Olvidaste tu contraseña?</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla de Recuperar Contraseña -->
+    <div id="forgotPasswordScreen" class="screen">
+        <div class="container">
+            <div class="header">
+                <button class="back-btn" onclick="showLoginScreen()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h2>Recuperar Contraseña</h2>
+            </div>
+
+            <div class="form-container">
+                <div class="recovery-info">
+                    <i class="fas fa-key"></i>
+                    <h3>¿Problemas para entrar?</h3>
+                    <p>Ingresa tu email y te enviaremos un enlace para recuperar el acceso a tu cuenta.</p>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" placeholder="Email" id="recoveryEmail">
+                </div>
+
+                <button class="btn-primary" onclick="showVerificationScreen()">Enviar enlace</button>
+
+                <div class="divider">
+                    <span>o</span>
+                </div>
+
+                <button class="btn-text" onclick="showRegisterScreen()">Crear cuenta nueva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla de Verificación -->
+    <div id="verificationScreen" class="screen">
+        <div class="container">
+            <div class="header">
+                <button class="back-btn" onclick="showForgotPasswordScreen()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h2>Verificar Email</h2>
+            </div>
+
+            <div class="form-container">
+                <div class="verification-info">
+                    <i class="fas fa-envelope-open"></i>
+                    <h3>Revisa tu email</h3>
+                    <p>Te hemos enviado un código de 6 dígitos a <strong id="sentEmail">tu@email.com</strong></p>
+                </div>
+
+                <div class="verification-code">
+                    <input type="text" maxlength="1" class="code-input" id="code1">
+                    <input type="text" maxlength="1" class="code-input" id="code2">
+                    <input type="text" maxlength="1" class="code-input" id="code3">
+                    <input type="text" maxlength="1" class="code-input" id="code4">
+                    <input type="text" maxlength="1" class="code-input" id="code5">
+                    <input type="text" maxlength="1" class="code-input" id="code6">
+                </div>
+
+                <button class="btn-primary" onclick="showResetPasswordScreen()">Verificar</button>
+
+                <div class="resend-section">
+                    <p>¿No recibiste el código?</p>
+                    <button class="btn-text" onclick="resendCode()">Reenviar código</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla de Nueva Contraseña -->
+    <div id="resetPasswordScreen" class="screen">
+        <div class="container">
+            <div class="header">
+                <button class="back-btn" onclick="showVerificationScreen()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h2>Nueva Contraseña</h2>
+            </div>
+
+            <div class="form-container">
+                <div class="reset-info">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Crear nueva contraseña</h3>
+                    <p>Tu nueva contraseña debe ser diferente a las anteriores y tener al menos 8 caracteres.</p>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" placeholder="Nueva contraseña" id="newPassword">
+                    <i class="fas fa-eye password-toggle" onclick="togglePassword('newPassword')"></i>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" placeholder="Confirmar nueva contraseña" id="confirmNewPassword">
+                    <i class="fas fa-eye password-toggle" onclick="togglePassword('confirmNewPassword')"></i>
+                </div>
+
+                <div class="password-requirements">
+                    <div class="requirement" id="req-length">
+                        <i class="fas fa-circle"></i>
+                        <span>Mínimo 8 caracteres</span>
+                    </div>
+                    <div class="requirement" id="req-uppercase">
+                        <i class="fas fa-circle"></i>
+                        <span>Una letra mayúscula</span>
+                    </div>
+                    <div class="requirement" id="req-number">
+                        <i class="fas fa-circle"></i>
+                        <span>Un número</span>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="showSuccessScreen()">Cambiar contraseña</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla de Éxito -->
+    <div id="successScreen" class="screen">
+        <div class="container">
+            <div class="success-container">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2>¡Contraseña actualizada!</h2>
+                <p>Tu contraseña ha sido cambiada exitosamente. Ya puedes iniciar sesión con tu nueva contraseña.</p>
+
+                <button class="btn-primary" onclick="showLoginScreen()">Iniciar sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla de Registro -->
+    <div id="registerScreen" class="screen">
+        <div class="container">
+            <div class="header">
+                <button class="back-btn" onclick="showLoginScreen()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h2>Crear Cuenta</h2>
+            </div>
+
+            <div class="form-container">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" placeholder="Nombre completo" id="fullName">
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" placeholder="Email" id="registerEmail">
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" placeholder="Contraseña" id="registerPassword">
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" placeholder="Confirmar contraseña" id="confirmPassword">
+                </div>
+
+                <button class="btn-primary" onclick="showProfilePhotoScreen()">Continuar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla de Foto de Perfil -->
+    <div id="profilePhotoScreen" class="screen">
+        <div class="container">
+            <div class="header">
+                <button class="back-btn" onclick="showRegisterScreen()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h2>Foto de Perfil</h2>
+            </div>
+
+            <div class="photo-container">
+                <div class="photo-upload">
+                    <div class="photo-preview" id="photoPreview">
+                        <i class="fas fa-camera"></i>
+                        <span>Toca para agregar foto</span>
+                    </div>
+                    <input type="file" id="photoInput" accept="image/*" hidden>
+                </div>
+
+                <p class="photo-description">Agrega una foto para que tus amigos te reconozcan fácilmente</p>
+
+                <button class="btn-primary" onclick="showUsernameScreen()">Continuar</button>
+                <button class="btn-text" onclick="showUsernameScreen()">Omitir por ahora</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla de Nombre de Usuario -->
+    <div id="usernameScreen" class="screen">
+        <div class="container">
+            <div class="header">
+                <button class="back-btn" onclick="showProfilePhotoScreen()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h2>Nombre de Usuario</h2>
+            </div>
+
+            <div class="form-container">
+                <div class="input-group">
+                    <span class="username-prefix">@</span>
+                    <input type="text" placeholder="nombredeusuario" id="username">
+                    <i class="fas fa-check username-check" id="usernameCheck"></i>
+                </div>
+
+                <p class="username-description">Elige un nombre único para tu perfil. Podrás cambiarlo después.</p>
+
+                <div class="suggestions">
+                    <h4>Sugerencias:</h4>
+                    <div class="suggestion-tags">
+                        <span class="suggestion-tag" onclick="setUsername('usuario123')">@usuario123</span>
+                        <span class="suggestion-tag" onclick="setUsername('social_user')">@social_user</span>
+                        <span class="suggestion-tag" onclick="setUsername('new_user2024')">@new_user2024</span>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="showMainScreen()">Comenzar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla Principal -->
+    <div id="mainScreen" class="screen">
+        <div class="main-container">
+            <!-- Header -->
+            <div class="main-header">
+                <div class="header-left">
+                    <h2>Blendery</h2>
+                </div>
+                <div class="header-right">
+                    <i class="fas fa-bell"></i>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="main-content" id="mainContent">
+                <!-- Inicio Tab Content -->
+                <div class="tab-content active" id="homeContent">
+                    <div class="story-section">
+                        <div class="story-item">
+                            <div class="story-image" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4);"></div>
+                            <span>Ana</span>
+                        </div>
+                        <div class="story-item">
+                            <div class="story-image" style="background: linear-gradient(45deg, #667eea, #764ba2);"></div>
+                            <span>Carlos</span>
+                        </div>
+                        <div class="story-item">
+                            <div class="story-image" style="background: linear-gradient(45deg, #f093fb, #f5576c);"></div>
+                            <span>María</span>
+                        </div>
+                    </div>
+
+                    <div class="post-section">
+                        <div class="create-post">
+                            <div class="user-avatar"></div>
+                            <input type="text" placeholder="¿Qué estás pensando?">
+                            <i class="fas fa-image"></i>
+                        </div>
+
+                        <!-- Posts -->
+                        <div class="post">
+                            <div class="post-header">
+                                <div class="user-info">
+                                    <div class="user-avatar" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4);"></div>
+                                    <div class="user-details">
+                                        <h4>Ana García</h4>
+                                        <span>Hace 2 horas</span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-ellipsis-h"></i>
+                            </div>
+                            <div class="post-content">
+                                <p>¡Increíble día en la playa! 🏖️ #Verano #Playa</p>
+                                <div class="post-image" style="background: linear-gradient(45deg, #74b9ff, #0984e3);"></div>
+                            </div>
+                            <div class="post-actions">
+                                <button><i class="fas fa-heart"></i> 124</button>
+                                <button><i class="fas fa-comment"></i> 12</button>
+                                <button><i class="fas fa-share"></i> 5</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección de Búsqueda -->
+                <div class="tab-content" id="searchContent">
+                    <div class="search-container">
+                        <div class="search-header">
+                            <div class="search-input-container">
+                                <i class="fas fa-search"></i>
+                                <input type="text" placeholder="Buscar personas, #hashtags..." id="searchInput">
+                                <i class="fas fa-times search-clear" id="searchClear"></i>
+                            </div>
+                        </div>
+
+                        <div class="search-filters">
+                            <div class="filter-tab active" data-filter="people">
+                                <i class="fas fa-users"></i>
+                                <span>Personas</span>
+                            </div>
+                            <div class="filter-tab" data-filter="hashtags">
+                                <i class="fas fa-hashtag"></i>
+                                <span>Hashtags</span>
+                            </div>
+                            <div class="filter-tab" data-filter="photos">
+                                <i class="fas fa-images"></i>
+                                <span>Fotos</span>
+                            </div>
+                        </div>
+
+                        <div class="search-results" id="searchResults">
+                            <div class="search-suggestions">
+                                <h4>Sugerencias para ti</h4>
+                                
+                                <div class="user-suggestion">
+                                    <div class="user-avatar" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4);"></div>
+                                    <div class="user-info">
+                                        <h5>María González</h5>
+                                        <span>@maria_g • 2.3k seguidores</span>
+                                    </div>
+                                    <button class="follow-btn">Seguir</button>
+                                </div>
+
+                                <div class="user-suggestion">
+                                    <div class="user-avatar" style="background: linear-gradient(45deg, #667eea, #764ba2);"></div>
+                                    <div class="user-info">
+                                        <h5>Carlos Ruiz</h5>
+                                        <span>@carlos_dev • 1.8k seguidores</span>
+                                    </div>
+                                    <button class="follow-btn">Seguir</button>
+                                </div>
+
+                                <div class="user-suggestion">
+                                    <div class="user-avatar" style="background: linear-gradient(45deg, #f093fb, #f5576c);"></div>
+                                    <div class="user-info">
+                                        <h5>Ana Martínez</h5>
+                                        <span>@ana_design • 3.1k seguidores</span>
+                                    </div>
+                                    <button class="follow-btn">Seguir</button>
+                                </div>
+                            </div>
+
+                            <div class="trending-hashtags">
+                                <h4>Tendencias</h4>
+                                
+                                <div class="hashtag-item">
+                                    <div class="hashtag-info">
+                                        <h5>#Verano2024</h5>
+                                        <span>1.2M publicaciones</span>
+                                    </div>
+                                    <i class="fas fa-trending-up"></i>
+                                </div>
+
+                                <div class="hashtag-item">
+                                    <div class="hashtag-info">
+                                        <h5>#Tecnología</h5>
+                                        <span>890k publicaciones</span>
+                                    </div>
+                                    <i class="fas fa-trending-up"></i>
+                                </div>
+
+                                <div class="hashtag-item">
+                                    <div class="hashtag-info">
+                                        <h5>#Fotografía</h5>
+                                        <span>654k publicaciones</span>
+                                    </div>
+                                    <i class="fas fa-trending-up"></i>
+                                </div>
+
+                                <div class="hashtag-item">
+                                    <div class="hashtag-info">
+                                        <h5>#Viajes</h5>
+                                        <span>432k publicaciones</span>
+                                    </div>
+                                    <i class="fas fa-trending-up"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Otros tabs content -->
+                <div class="tab-content" id="momentsContent">
+                    <div class="story-section">
+                        <div class="story-item add-story">
+                            <div class="story-image">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <span>Añadir momento</span>
+                        </div>
+                        <div class="story-item">
+                            <div class="story-image" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4);"></div>
+                            <span>Tu momento</span>
+                        </div>
+                    </div>
+                    <div class="empty-state">
+                        <i class="fas fa-clock"></i>
+                        <h3>Tus Momentos</h3>
+                        <p>Comparte momentos especiales que desaparecen en 24 horas</p>
+                    </div>
+                </div>
+
+                
+
+                <div class="tab-content" id="settingsContent">
+                    <div class="settings-list">
+                        <div class="setting-item">
+                            <i class="fas fa-user"></i>
+                            <span>Perfil</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                        <div class="setting-item">
+                            <i class="fas fa-lock"></i>
+                            <span>Privacidad</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                        <div class="setting-item">
+                            <i class="fas fa-bell"></i>
+                            <span>Notificaciones</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                        <div class="setting-item">
+                            <i class="fas fa-palette"></i>
+                            <span>Tema</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Navigation -->
+            <div class="bottom-nav">
+                <div class="nav-item active" onclick="switchTab('home')">
+                    <i class="fas fa-home"></i>
+                    <span>Inicio</span>
+                </div>
+                <div class="nav-item" onclick="switchTab('search')">
+                    <i class="fas fa-search"></i>
+                    <span>Buscar</span>
+                </div>
+                <div class="nav-item" onclick="switchTab('moments')">
+                    <i class="fas fa-clock"></i>
+                    <span>Momentos</span>
+                </div>
+                <div class="nav-item" onclick="openCamera()">
+                    <i class="fas fa-plus"></i>
+                    <span>Crear</span>
+                </div>
+                <div class="nav-item" onclick="switchTab('settings')">
+                    <i class="fas fa-cog"></i>
+                    <span>Ajustes</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera Screen -->
+    <div id="cameraScreen" class="screen">
+        <div class="camera-container">
+            <div class="camera-header">
+                <button class="camera-close" onclick="closeCameraScreen()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <button class="camera-flip" onclick="flipCamera()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="camera-flash" onclick="toggleFlash()" id="flashButton">
+                    <i class="fas fa-bolt"></i>
+                </button>
+            </div>
+
+            <div class="camera-viewfinder">
+                <video id="cameraVideo" autoplay playsinline></video>
+                <canvas id="cameraCanvas" hidden></canvas>
+            </div>
+
+            <div class="camera-controls">
+                <button class="filter-btn" onclick="openFilters()">
+                    <i class="fas fa-magic"></i>
+                </button>
+                <button class="capture-btn" onclick="capturePhoto()">
+                    <div class="capture-circle"></div>
+                </button>
+                <div class="camera-spacer"></div>
+            </div>
+
+            <!-- Filters Panel -->
+            <div class="filters-panel" id="filtersPanel">
+                <div class="filters-header">
+                    <h3>Filtros</h3>
+                    <button onclick="closeFilters()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="filters-list">
+                    <div class="filter-item active" data-filter="none">
+                        <div class="filter-preview"></div>
+                        <span>Original</span>
+                    </div>
+                    <div class="filter-item" data-filter="sepia">
+                        <div class="filter-preview sepia"></div>
+                        <span>Sepia</span>
+                    </div>
+                    <div class="filter-item" data-filter="grayscale">
+                        <div class="filter-preview grayscale"></div>
+                        <span>B&N</span>
+                    </div>
+                    <div class="filter-item" data-filter="vintage">
+                        <div class="filter-preview vintage"></div>
+                        <span>Vintage</span>
+                    </div>
+                    <div class="filter-item" data-filter="bright">
+                        <div class="filter-preview bright"></div>
+                        <span>Brillo</span>
+                    </div>
+                    <div class="filter-item" data-filter="contrast">
+                        <div class="filter-preview contrast"></div>
+                        <span>Contraste</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Post Creation Screen -->
+    <div id="postCreationScreen" class="screen">
+        <div class="post-creation-container">
+            <div class="post-creation-header">
+                <button class="back-btn" onclick="showMainScreen()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h2>Nueva Publicación</h2>
+                <button class="publish-btn" onclick="publishPost()">Publicar</button>
+            </div>
+
+            <div class="post-preview">
+                <img id="capturedImage" src="" alt="Foto capturada">
+            </div>
+
+            <div class="post-options">
+                <div class="option-item">
+                    <div class="option-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <div class="option-content">
+                        <textarea placeholder="Escribe una descripción..." id="postDescription"></textarea>
+                    </div>
+                </div>
+
+                <div class="option-item" onclick="addHashtags()">
+                    <div class="option-icon">
+                        <i class="fas fa-hashtag"></i>
+                    </div>
+                    <div class="option-content">
+                        <span>Agregar hashtags</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="option-item" onclick="addMusic()">
+                    <div class="option-icon">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div class="option-content">
+                        <span>Agregar música</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="option-item" onclick="addLocation()">
+                    <div class="option-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="option-content">
+                        <span id="locationText">Agregar ubicación</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="post-actions">
+                <button class="btn-secondary" onclick="saveToDrafts()">
+                    <i class="fas fa-save"></i>
+                    Guardar en borradores
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drafts Screen -->
+    <div id="draftsScreen" class="screen">
+        <div class="drafts-container">
+            <div class="drafts-header">
+                <button class="back-btn" onclick="showMainScreen()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <h2>Borradores</h2>
+            </div>
+
+            <div class="drafts-content" id="draftsContent">
+                <div class="empty-state">
+                    <i class="fas fa-draft2digital"></i>
+                    <h3>Sin borradores</h3>
+                    <p>Tus publicaciones guardadas aparecerán aquí</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <p class="loading-text">Cargando...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
