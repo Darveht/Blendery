@@ -535,6 +535,12 @@
             <div class="camera-viewfinder">
                 <video id="cameraVideo" autoplay playsinline></video>
                 <canvas id="cameraCanvas" hidden></canvas>
+                
+                <!-- Photo loading animation -->
+                <div class="photo-loading" id="photoLoading">
+                    <div class="loading-ring"></div>
+                    <span>Procesando foto...</span>
+                </div>
             </div>
 
             <div class="camera-controls">
@@ -547,6 +553,9 @@
                 <div class="camera-spacer"></div>
             </div>
 
+            <!-- Filters Overlay -->
+            <div class="filters-overlay" id="filtersOverlay" onclick="closeFilters()"></div>
+            
             <!-- Filters Panel -->
             <div class="filters-panel" id="filtersPanel">
                 <div class="filters-header">

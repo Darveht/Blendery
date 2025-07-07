@@ -332,6 +332,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Setup search functionality
     setupSearchFunctionality();
     
+    // Prevenir que el panel de filtros interfiera con el scroll
+    const cameraScreen = document.getElementById('cameraScreen');
+    if (cameraScreen) {
+        cameraScreen.addEventListener('touchmove', function(e) {
+            const filtersPanel = document.getElementById('filtersPanel');
+            if (!filtersPanel.classList.contains('active')) {
+                // Solo permitir scroll vertical normal si no hay panel activo
+                e.stopPropagation();
+            }
+        });
+    }
+    
     // Setup password validation
     const newPasswordInput = document.getElementById('newPassword');
     if (newPasswordInput) {
@@ -630,10 +642,16 @@ function toggleFlash() {
 
 function openFilters() {
     document.getElementById('filtersPanel').classList.add('active');
+    document.getElementById('filtersOverlay').classList.add('active');
+    // Prevenir scroll del body cuando el panel esté abierto
+    document.body.style.overflow = 'hidden';
 }
 
 function closeFilters() {
     document.getElementById('filtersPanel').classList.remove('active');
+    document.getElementById('filtersOverlay').classList.remove('active');
+    // Restaurar scroll del body
+    document.body.style.overflow = '';
 }
 
 function applyFilter(filter) {
@@ -656,45 +674,55 @@ function applyFilter(filter) {
 }
 
 function capturePhoto() {
+    // Mostrar animación de carga
+    const photoLoading = document.getElementById('photoLoading');
+    photoLoading.classList.add('show');
+    
     const video = document.getElementById('cameraVideo');
     const canvas = document.getElementById('cameraCanvas');
     const context = canvas.getContext('2d');
-    
-    // Set canvas dimensions to match video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    
-    // Draw video frame to canvas
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
-    // Apply filter to canvas if needed
-    if (currentFilter !== 'none') {
-        context.filter = getCanvasFilter(currentFilter);
-        context.drawImage(canvas, 0, 0);
-        context.filter = 'none';
-    }
     
     // Flash effect
     if (flashEnabled) {
         showFlashEffect();
     }
     
-    // Convert to data URL
-    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-    
-    // Agregar a la colección de imágenes capturadas
-    if (capturedImages.length < maxImages) {
-        capturedImages.push(imageDataUrl);
-        updatePhotoGallery();
+    // Simular procesamiento con delay
+    setTimeout(() => {
+        // Set canvas dimensions to match video
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
         
-        // Solo ir a post creation cuando tenga exactamente 3 fotos
-        if (capturedImages.length === maxImages) {
-            setTimeout(() => {
-                stopCamera();
-                showPostCreationScreen(capturedImages);
-            }, 800);
+        // Draw video frame to canvas
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Apply filter to canvas if needed
+        if (currentFilter !== 'none') {
+            context.filter = getCanvasFilter(currentFilter);
+            context.drawImage(canvas, 0, 0);
+            context.filter = 'none';
         }
-    }
+        
+        // Convert to data URL
+        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        
+        // Ocultar animación de carga
+        photoLoading.classList.remove('show');
+        
+        // Agregar a la colección de imágenes capturadas
+        if (capturedImages.length < maxImages) {
+            capturedImages.push(imageDataUrl);
+            updatePhotoGallery();
+            
+            // Solo ir a post creation cuando tenga exactamente 3 fotos
+            if (capturedImages.length === maxImages) {
+                setTimeout(() => {
+                    stopCamera();
+                    showPostCreationScreen(capturedImages);
+                }, 800);
+            }
+        }
+    }, 600); // Delay para mostrar la animación de carga
 }
 
 function updatePhotoGallery() {
