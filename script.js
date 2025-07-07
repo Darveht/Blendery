@@ -381,6 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Variables para múltiples fotos
 let capturedImages = [];
 let maxImages = 3;
+let minImages = 3;
 
 // Post interactions
 function likePost(element) {
@@ -557,6 +558,10 @@ function openCamera() {
     if (gallery) {
         gallery.classList.remove('show');
     }
+    
+    // Mostrar mensaje de que necesita tomar 3 fotos
+    alert('Debes tomar exactamente 3 fotos para crear tu publicación');
+    
     startCamera();
 }
 
@@ -682,12 +687,12 @@ function capturePhoto() {
         capturedImages.push(imageDataUrl);
         updatePhotoGallery();
         
-        // Si es la primera foto o ya tiene el máximo, ir a post creation
-        if (capturedImages.length === 1 || capturedImages.length === maxImages) {
+        // Solo ir a post creation cuando tenga exactamente 3 fotos
+        if (capturedImages.length === maxImages) {
             setTimeout(() => {
                 stopCamera();
                 showPostCreationScreen(capturedImages);
-            }, 500);
+            }, 800);
         }
     }
 }
@@ -696,28 +701,37 @@ function updatePhotoGallery() {
     const gallery = document.querySelector('.photo-gallery') || createPhotoGallery();
     gallery.innerHTML = '';
     
-    capturedImages.forEach((image, index) => {
-        const photoDiv = document.createElement('div');
-        photoDiv.className = 'gallery-photo selected';
-        photoDiv.innerHTML = `
-            <img src="${image}" alt="Foto ${index + 1}">
-            <div class="photo-counter">${index + 1}</div>
-            <button class="remove-photo" onclick="removePhoto(${index})">×</button>
-        `;
-        gallery.appendChild(photoDiv);
-    });
+    // Agregar indicador de progreso
+    const progress = document.createElement('div');
+    progress.className = `photos-progress ${capturedImages.length === maxImages ? 'complete' : ''}`;
+    progress.textContent = `${capturedImages.length}/${maxImages} fotos`;
+    gallery.appendChild(progress);
     
-    // Botón para continuar si hay fotos
-    if (capturedImages.length > 0) {
-        const continueBtn = document.createElement('button');
-        continueBtn.className = 'btn-primary';
-        continueBtn.style.cssText = 'height: 40px; padding: 0 16px; font-size: 0.9rem; white-space: nowrap;';
-        continueBtn.textContent = 'Continuar';
-        continueBtn.onclick = () => {
-            stopCamera();
-            showPostCreationScreen(capturedImages);
-        };
-        gallery.appendChild(continueBtn);
+    // Crear espacios para las 3 fotos
+    for (let i = 0; i < maxImages; i++) {
+        const photoDiv = document.createElement('div');
+        photoDiv.className = 'gallery-photo';
+        
+        if (i < capturedImages.length) {
+            // Foto tomada
+            photoDiv.classList.add('selected');
+            photoDiv.innerHTML = `
+                <img src="${capturedImages[i]}" alt="Foto ${i + 1}">
+                <div class="photo-counter">${i + 1}</div>
+                <button class="remove-photo" onclick="removePhoto(${i})">×</button>
+            `;
+        } else {
+            // Espacio vacío
+            photoDiv.style.background = '#F2F2F2';
+            photoDiv.style.border = '2px dashed #A5A5A5';
+            photoDiv.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #A5A5A5; font-size: 1.2rem;">
+                    <i class="fas fa-camera"></i>
+                </div>
+            `;
+        }
+        
+        gallery.appendChild(photoDiv);
     }
     
     gallery.classList.add('show');
@@ -732,10 +746,11 @@ function createPhotoGallery() {
 
 function removePhoto(index) {
     capturedImages.splice(index, 1);
+    updatePhotoGallery();
+    
+    // Si no hay fotos, ocultar galería
     if (capturedImages.length === 0) {
         document.querySelector('.photo-gallery').classList.remove('show');
-    } else {
-        updatePhotoGallery();
     }
 }
 
