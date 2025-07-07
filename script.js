@@ -674,6 +674,11 @@ function applyFilter(filter) {
 }
 
 function capturePhoto() {
+    // Deshabilitar temporalmente el botón para evitar múltiples capturas
+    const captureBtn = document.querySelector('.capture-btn');
+    captureBtn.style.pointerEvents = 'none';
+    captureBtn.style.opacity = '0.7';
+    
     // Mostrar animación de carga
     const photoLoading = document.getElementById('photoLoading');
     photoLoading.classList.add('show');
@@ -708,6 +713,10 @@ function capturePhoto() {
         
         // Ocultar animación de carga
         photoLoading.classList.remove('show');
+        
+        // Rehabilitar el botón
+        captureBtn.style.pointerEvents = 'auto';
+        captureBtn.style.opacity = '1';
         
         // Agregar a la colección de imágenes capturadas
         if (capturedImages.length < maxImages) {
