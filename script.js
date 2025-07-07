@@ -378,6 +378,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// Variables para múltiples fotos
+let capturedImages = [];
+let maxImages = 3;
+
 // Post interactions
 function likePost(element) {
     const heartIcon = element.querySelector('i');
@@ -397,6 +401,29 @@ function likePost(element) {
     }
     
     countSpan.textContent = count;
+}
+
+// Navegación de imágenes en posts
+function navigateImages(direction, postElement) {
+    const container = postElement.querySelector('.images-container');
+    const images = postElement.querySelectorAll('.post-image');
+    const indicators = postElement.querySelectorAll('.indicator');
+    
+    let currentIndex = parseInt(postElement.dataset.currentImage || '0');
+    
+    if (direction === 'next') {
+        currentIndex = (currentIndex + 1) % images.length;
+    } else {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+    }
+    
+    container.style.transform = `translateX(-${currentIndex * 100}%)`;
+    postElement.dataset.currentImage = currentIndex;
+    
+    // Actualizar indicadores
+    indicators.forEach((indicator, index) => {
+        indicator.classList.toggle('active', index === currentIndex);
+    });
 }
 
 function sharePost(element) {
@@ -523,6 +550,13 @@ let currentDraft = null;
 function openCamera() {
     hideAllScreens();
     document.getElementById('cameraScreen').classList.add('active');
+    // Resetear imágenes capturadas
+    capturedImages = [];
+    // Ocultar galería de fotos si existe
+    const gallery = document.querySelector('.photo-gallery');
+    if (gallery) {
+        gallery.classList.remove('show');
+    }
     startCamera();
 }
 
@@ -643,9 +677,66 @@ function capturePhoto() {
     // Convert to data URL
     const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
     
-    // Stop camera and go to post creation
-    stopCamera();
-    showPostCreationScreen(imageDataUrl);
+    // Agregar a la colección de imágenes capturadas
+    if (capturedImages.length < maxImages) {
+        capturedImages.push(imageDataUrl);
+        updatePhotoGallery();
+        
+        // Si es la primera foto o ya tiene el máximo, ir a post creation
+        if (capturedImages.length === 1 || capturedImages.length === maxImages) {
+            setTimeout(() => {
+                stopCamera();
+                showPostCreationScreen(capturedImages);
+            }, 500);
+        }
+    }
+}
+
+function updatePhotoGallery() {
+    const gallery = document.querySelector('.photo-gallery') || createPhotoGallery();
+    gallery.innerHTML = '';
+    
+    capturedImages.forEach((image, index) => {
+        const photoDiv = document.createElement('div');
+        photoDiv.className = 'gallery-photo selected';
+        photoDiv.innerHTML = `
+            <img src="${image}" alt="Foto ${index + 1}">
+            <div class="photo-counter">${index + 1}</div>
+            <button class="remove-photo" onclick="removePhoto(${index})">×</button>
+        `;
+        gallery.appendChild(photoDiv);
+    });
+    
+    // Botón para continuar si hay fotos
+    if (capturedImages.length > 0) {
+        const continueBtn = document.createElement('button');
+        continueBtn.className = 'btn-primary';
+        continueBtn.style.cssText = 'height: 40px; padding: 0 16px; font-size: 0.9rem; white-space: nowrap;';
+        continueBtn.textContent = 'Continuar';
+        continueBtn.onclick = () => {
+            stopCamera();
+            showPostCreationScreen(capturedImages);
+        };
+        gallery.appendChild(continueBtn);
+    }
+    
+    gallery.classList.add('show');
+}
+
+function createPhotoGallery() {
+    const gallery = document.createElement('div');
+    gallery.className = 'photo-gallery';
+    document.getElementById('cameraScreen').appendChild(gallery);
+    return gallery;
+}
+
+function removePhoto(index) {
+    capturedImages.splice(index, 1);
+    if (capturedImages.length === 0) {
+        document.querySelector('.photo-gallery').classList.remove('show');
+    } else {
+        updatePhotoGallery();
+    }
 }
 
 function getCanvasFilter(filter) {
@@ -681,10 +772,20 @@ function showFlashEffect() {
     }, 50);
 }
 
-function showPostCreationScreen(imageDataUrl) {
+function showPostCreationScreen(images) {
     hideAllScreens();
     document.getElementById('postCreationScreen').classList.add('active');
-    document.getElementById('capturedImage').src = imageDataUrl;
+    
+    // Si es un array de imágenes, mostrar la primera
+    if (Array.isArray(images)) {
+        document.getElementById('capturedImage').src = images[0];
+        // Guardar todas las imágenes para usar en publishPost
+        document.getElementById('capturedImage').dataset.allImages = JSON.stringify(images);
+    } else {
+        // Compatibilidad con imagen única
+        document.getElementById('capturedImage').src = images;
+        document.getElementById('capturedImage').dataset.allImages = JSON.stringify([images]);
+    }
     
     // Get user location
     getCurrentLocation();
@@ -746,6 +847,35 @@ function addNewPostToFeed() {
     const postSection = document.querySelector('.post-section');
     const newPost = document.createElement('div');
     newPost.className = 'post';
+    newPost.dataset.currentImage = '0';
+    
+    // Obtener todas las imágenes
+    const allImagesData = document.getElementById('capturedImage').dataset.allImages;
+    const images = JSON.parse(allImagesData || '[]');
+    
+    // Crear HTML para múltiples imágenes
+    let imagesHTML = '';
+    if (images.length > 1) {
+        imagesHTML = `
+            <div class="post-images">
+                <div class="images-container">
+                    ${images.map(img => `<img src="${img}" class="post-image" alt="Foto">`).join('')}
+                </div>
+                <button class="image-nav prev" onclick="navigateImages('prev', this.closest('.post'))">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="image-nav next" onclick="navigateImages('next', this.closest('.post'))">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <div class="image-indicators">
+                    ${images.map((_, index) => `<div class="indicator ${index === 0 ? 'active' : ''}"></div>`).join('')}
+                </div>
+            </div>
+        `;
+    } else {
+        imagesHTML = `<img src="${images[0]}" class="post-image" alt="Foto">`;
+    }
+    
     newPost.innerHTML = `
         <div class="post-header">
             <div class="user-info">
@@ -759,7 +889,7 @@ function addNewPostToFeed() {
         </div>
         <div class="post-content">
             <p>${document.getElementById('postDescription').value || '¡Nueva foto!'}</p>
-            <img src="${document.getElementById('capturedImage').src}" style="width: 100%; border-radius: 12px; margin-bottom: 16px;">
+            ${imagesHTML}
         </div>
         <div class="post-actions">
             <button onclick="likePost(this)"><i class="far fa-heart"></i> <span>0</span></button>
