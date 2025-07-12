@@ -314,7 +314,10 @@
                     <h2>Blendery</h2>
                 </div>
                 <div class="header-right">
-                    <i class="fas fa-bell"></i>
+                    <div class="notification-icon" onclick="openNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <div class="notification-badge" id="notificationBadge">3</div>
+                    </div>
                 </div>
             </div>
 
@@ -738,6 +741,168 @@
         <div class="spinner-container">
             <div class="spinner"></div>
             <p class="loading-text">Cargando...</p>
+        </div>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div class="notifications-overlay" id="notificationsOverlay" onclick="closeNotifications()"></div>
+    <div class="notifications-panel" id="notificationsPanel">
+        <div class="notifications-header">
+            <h3>Notificaciones</h3>
+            <button class="close-notifications" onclick="closeNotifications()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="notifications-filters">
+            <div class="filter-chip active" data-filter="all" onclick="filterNotifications('all')">
+                <span>Todas</span>
+                <div class="filter-count">8</div>
+            </div>
+            <div class="filter-chip" data-filter="unread" onclick="filterNotifications('unread')">
+                <span>No leídas</span>
+                <div class="filter-count">3</div>
+            </div>
+            <div class="filter-chip" data-filter="follows" onclick="filterNotifications('follows')">
+                <span>Seguidores</span>
+                <div class="filter-count">2</div>
+            </div>
+            <div class="filter-chip" data-filter="likes" onclick="filterNotifications('likes')">
+                <span>Me gusta</span>
+                <div class="filter-count">4</div>
+            </div>
+        </div>
+
+        <div class="notifications-content" id="notificationsContent">
+            <div class="notification-item unread" data-type="follows" data-time="hace 2 min">
+                <div class="notification-avatar" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4);">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ctext y='18' font-size='16'%3E👤%3C/text%3E%3C/svg%3E" alt="Usuario">
+                </div>
+                <div class="notification-content">
+                    <div class="notification-text">
+                        <strong>María González</strong> comenzó a seguirte
+                    </div>
+                    <div class="notification-time">hace 2 minutos</div>
+                </div>
+                <div class="notification-action">
+                    <button class="follow-back-btn">Seguir</button>
+                </div>
+                <div class="notification-indicator"></div>
+            </div>
+
+            <div class="notification-item unread" data-type="likes" data-time="hace 5 min">
+                <div class="notification-avatar" style="background: linear-gradient(45deg, #667eea, #764ba2);">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ctext y='18' font-size='16'%3E👨%3C/text%3E%3C/svg%3E" alt="Usuario">
+                </div>
+                <div class="notification-content">
+                    <div class="notification-text">
+                        <strong>Carlos Ruiz</strong> le gustó tu publicación
+                    </div>
+                    <div class="notification-time">hace 5 minutos</div>
+                </div>
+                <div class="notification-post-preview">
+                    <div class="mini-post-image"></div>
+                </div>
+                <div class="notification-indicator"></div>
+            </div>
+
+            <div class="notification-item unread" data-type="follows" data-time="hace 15 min">
+                <div class="notification-avatar" style="background: linear-gradient(45deg, #f093fb, #f5576c);">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ctext y='18' font-size='16'%3E👩%3C/text%3E%3C/svg%3E" alt="Usuario">
+                </div>
+                <div class="notification-content">
+                    <div class="notification-text">
+                        <strong>Ana Martínez</strong> comenzó a seguirte
+                    </div>
+                    <div class="notification-time">hace 15 minutos</div>
+                </div>
+                <div class="notification-action">
+                    <button class="follow-back-btn">Seguir</button>
+                </div>
+                <div class="notification-indicator"></div>
+            </div>
+
+            <div class="notification-item read" data-type="likes" data-time="hace 1 h">
+                <div class="notification-avatar" style="background: linear-gradient(45deg, #a8edea, #fed6e3);">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ctext y='18' font-size='16'%3E👤%3C/text%3E%3C/svg%3E" alt="Usuario">
+                </div>
+                <div class="notification-content">
+                    <div class="notification-text">
+                        <strong>Luis Torres</strong> y <strong>2 personas más</strong> les gustó tu publicación
+                    </div>
+                    <div class="notification-time">hace 1 hora</div>
+                </div>
+                <div class="notification-post-preview">
+                    <div class="mini-post-image"></div>
+                </div>
+            </div>
+
+            <div class="notification-item read" data-type="likes" data-time="hace 3 h">
+                <div class="notification-avatar" style="background: linear-gradient(45deg, #ffecd2, #fcb69f);">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ctext y='18' font-size='16'%3E👩%3C/text%3E%3C/svg%3E" alt="Usuario">
+                </div>
+                <div class="notification-content">
+                    <div class="notification-text">
+                        <strong>Sofia López</strong> compartió tu publicación
+                    </div>
+                    <div class="notification-time">hace 3 horas</div>
+                </div>
+                <div class="notification-post-preview">
+                    <div class="mini-post-image"></div>
+                </div>
+            </div>
+
+            <div class="notification-item read" data-type="likes" data-time="ayer">
+                <div class="notification-avatar" style="background: linear-gradient(45deg, #ff9a9e, #fecfef);">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ctext y='18' font-size='16'%3E👨%3C/text%3E%3C/svg%3E" alt="Usuario">
+                </div>
+                <div class="notification-content">
+                    <div class="notification-text">
+                        <strong>Diego Morales</strong> comentó tu publicación: "¡Increíble foto!"
+                    </div>
+                    <div class="notification-time">ayer</div>
+                </div>
+                <div class="notification-post-preview">
+                    <div class="mini-post-image"></div>
+                </div>
+            </div>
+
+            <div class="notification-item read" data-type="likes" data-time="hace 2 días">
+                <div class="notification-avatar" style="background: linear-gradient(45deg, #fad0c4, #ffd1ff);">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ctext y='18' font-size='16'%3E👩%3C/text%3E%3C/svg%3E" alt="Usuario">
+                </div>
+                <div class="notification-content">
+                    <div class="notification-text">
+                        <strong>Camila Vega</strong> y <strong>5 personas más</strong> les gustó tu momento
+                    </div>
+                    <div class="notification-time">hace 2 días</div>
+                </div>
+                <div class="notification-post-preview">
+                    <div class="mini-story-preview"></div>
+                </div>
+            </div>
+
+            <div class="notification-item read" data-type="follows" data-time="hace 3 días">
+                <div class="notification-avatar" style="background: linear-gradient(45deg, #a18cd1, #fbc2eb);">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ctext y='18' font-size='16'%3E👤%3C/text%3E%3C/svg%3E" alt="Usuario">
+                </div>
+                <div class="notification-content">
+                    <div class="notification-text">
+                        <strong>Roberto Silva</strong> comenzó a seguirte
+                    </div>
+                    <div class="notification-time">hace 3 días</div>
+                </div>
+                <div class="notification-action">
+                    <button class="follow-back-btn following">Siguiendo</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="notifications-footer">
+            <button class="mark-all-read-btn" onclick="markAllAsRead()">
+                <i class="fas fa-check-double"></i>
+                Marcar todo como leído
+            </button>
         </div>
     </div>
 

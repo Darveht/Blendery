@@ -332,6 +332,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Setup search functionality
     setupSearchFunctionality();
     
+    // Initialize notifications
+    updateNotificationCounts();
+    
+    // Start simulating real-time notifications after app loads
+    setTimeout(() => {
+        simulateRealTimeNotifications();
+    }, 5000);
+    
     // Prevenir que el panel de filtros interfiera con el scroll
     const cameraScreen = document.getElementById('cameraScreen');
     if (cameraScreen) {
@@ -1029,6 +1037,61 @@ document.addEventListener('DOMContentLoaded', function() {
             applyFilter(filter);
         });
     });
+    
+    // Add notification item click handlers
+    document.addEventListener('click', function(e) {
+        const notificationItem = e.target.closest('.notification-item');
+        if (notificationItem) {
+            markNotificationAsRead(notificationItem);
+        }
+        
+        const followBtn = e.target.closest('.follow-back-btn');
+        if (followBtn) {
+            e.stopPropagation();
+            const username = followBtn.closest('.notification-item').querySelector('strong').textContent;
+            followBackUser(followBtn, username);
+        }
+    });
+    
+    // Close notifications when clicking outside
+    document.addEventListener('click', function(e) {
+        const panel = document.getElementById('notificationsPanel');
+        const overlay = document.getElementById('notificationsOverlay');
+        const notificationIcon = document.querySelector('.notification-icon');
+        
+        if (panel.classList.contains('active') && 
+            !panel.contains(e.target) && 
+            !notificationIcon.contains(e.target)) {
+            closeNotifications();
+        }
+    });
+    
+    // Handle swipe down to close notifications (mobile)
+    let startY = 0;
+    let currentY = 0;
+    
+    document.getElementById('notificationsPanel').addEventListener('touchstart', function(e) {
+        startY = e.touches[0].clientY;
+    });
+    
+    document.getElementById('notificationsPanel').addEventListener('touchmove', function(e) {
+        currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+        
+        if (diff > 0 && diff < 100) {
+            this.style.transform = `translateY(${diff}px)`;
+        }
+    });
+    
+    document.getElementById('notificationsPanel').addEventListener('touchend', function(e) {
+        const diff = currentY - startY;
+        
+        if (diff > 50) {
+            closeNotifications();
+        } else {
+            this.style.transform = 'translateY(0)';
+        }
+    });
 });
 
 // Search functionality
@@ -1036,9 +1099,335 @@ function openSearch() {
     alert('Función de búsqueda próximamente...');
 }
 
-// Notifications
+// Notifications System
+let notifications = [
+    {
+        id: 1,
+        type: 'follows',
+        user: 'María González',
+        avatar: 'linear-gradient(45deg, #ff6b6b, #4ecdc4)',
+        text: 'comenzó a seguirte',
+        time: 'hace 2 min',
+        unread: true,
+        action: 'follow'
+    },
+    {
+        id: 2,
+        type: 'likes',
+        user: 'Carlos Ruiz',
+        avatar: 'linear-gradient(45deg, #667eea, #764ba2)',
+        text: 'le gustó tu publicación',
+        time: 'hace 5 min',
+        unread: true,
+        hasPreview: true
+    },
+    {
+        id: 3,
+        type: 'follows',
+        user: 'Ana Martínez',
+        avatar: 'linear-gradient(45deg, #f093fb, #f5576c)',
+        text: 'comenzó a seguirte',
+        time: 'hace 15 min',
+        unread: true,
+        action: 'follow'
+    }
+];
+
 function openNotifications() {
-    alert('Notificaciones próximamente...');
+    const overlay = document.getElementById('notificationsOverlay');
+    const panel = document.getElementById('notificationsPanel');
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+    
+    // Show overlay and panel
+    overlay.classList.add('active');
+    panel.classList.add('active');
+    
+    // Update notification badge
+    updateNotificationCounts();
+}
+
+function closeNotifications() {
+    const overlay = document.getElementById('notificationsOverlay');
+    const panel = document.getElementById('notificationsPanel');
+    
+    // Restore body scroll
+    document.body.style.overflow = '';
+    
+    // Hide overlay and panel
+    overlay.classList.remove('active');
+    panel.classList.remove('active');
+}
+
+function filterNotifications(filter) {
+    // Remove active class from all filters
+    const filterChips = document.querySelectorAll('.filter-chip');
+    filterChips.forEach(chip => chip.classList.remove('active'));
+    
+    // Add active class to clicked filter
+    const activeFilter = document.querySelector(`[data-filter="${filter}"]`);
+    activeFilter.classList.add('active');
+    
+    // Update content data attribute for CSS filtering
+    const content = document.getElementById('notificationsContent');
+    content.setAttribute('data-filter', filter);
+    
+    // Update filter counts dynamically
+    updateFilterCounts(filter);
+}
+
+function updateFilterCounts(activeFilter = 'all') {
+    const notificationItems = document.querySelectorAll('.notification-item');
+    const filterChips = document.querySelectorAll('.filter-chip');
+    
+    let counts = {
+        all: notificationItems.length,
+        unread: document.querySelectorAll('.notification-item.unread').length,
+        follows: document.querySelectorAll('.notification-item[data-type="follows"]').length,
+        likes: document.querySelectorAll('.notification-item[data-type="likes"]').length
+    };
+    
+    filterChips.forEach(chip => {
+        const filter = chip.getAttribute('data-filter');
+        const countElement = chip.querySelector('.filter-count');
+        if (countElement && counts[filter] !== undefined) {
+            countElement.textContent = counts[filter];
+        }
+    });
+}
+
+function updateNotificationCounts() {
+    const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+    const badge = document.getElementById('notificationBadge');
+    
+    if (unreadCount > 0) {
+        badge.textContent = unreadCount;
+        badge.style.display = 'flex';
+    } else {
+        badge.style.display = 'none';
+    }
+    
+    updateFilterCounts();
+}
+
+function markAllAsRead() {
+    const unreadItems = document.querySelectorAll('.notification-item.unread');
+    
+    unreadItems.forEach(item => {
+        item.classList.remove('unread');
+        
+        // Add fade animation
+        item.style.opacity = '0.7';
+        setTimeout(() => {
+            item.style.opacity = '1';
+        }, 300);
+    });
+    
+    // Update counts
+    setTimeout(() => {
+        updateNotificationCounts();
+    }, 300);
+    
+    // Show feedback
+    showNotificationFeedback('Todas las notificaciones marcadas como leídas');
+}
+
+function markNotificationAsRead(notificationElement) {
+    if (notificationElement.classList.contains('unread')) {
+        notificationElement.classList.remove('unread');
+        updateNotificationCounts();
+    }
+}
+
+function followBackUser(button, username) {
+    if (button.classList.contains('following')) {
+        button.textContent = 'Seguir';
+        button.classList.remove('following');
+        showNotificationFeedback(`Dejaste de seguir a ${username}`);
+    } else {
+        button.textContent = 'Siguiendo';
+        button.classList.add('following');
+        showNotificationFeedback(`Ahora sigues a ${username}`);
+    }
+}
+
+function showNotificationFeedback(message) {
+    // Create feedback element
+    const feedback = document.createElement('div');
+    feedback.className = 'notification-feedback';
+    feedback.textContent = message;
+    feedback.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(22, 24, 35, 0.9);
+        color: #FFFFFF;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        z-index: 300;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+    
+    document.body.appendChild(feedback);
+    
+    // Animate in
+    setTimeout(() => {
+        feedback.style.opacity = '1';
+    }, 10);
+    
+    // Animate out and remove
+    setTimeout(() => {
+        feedback.style.opacity = '0';
+        setTimeout(() => {
+            document.body.removeChild(feedback);
+        }, 300);
+    }, 2000);
+}
+
+// Simulate real-time notifications
+function simulateRealTimeNotifications() {
+    setInterval(() => {
+        if (Math.random() < 0.3) { // 30% chance every interval
+            addNewNotification();
+        }
+    }, 15000); // Check every 15 seconds
+}
+
+function addNewNotification() {
+    const newNotifications = [
+        {
+            type: 'likes',
+            user: 'Usuario Nuevo',
+            avatar: 'linear-gradient(45deg, #ff9a9e, #fecfef)',
+            text: 'le gustó tu publicación',
+            time: 'ahora',
+            unread: true,
+            hasPreview: true
+        },
+        {
+            type: 'follows',
+            user: 'Nuevo Seguidor',
+            avatar: 'linear-gradient(45deg, #a8edea, #fed6e3)',
+            text: 'comenzó a seguirte',
+            time: 'ahora',
+            unread: true,
+            action: 'follow'
+        }
+    ];
+    
+    const randomNotification = newNotifications[Math.floor(Math.random() * newNotifications.length)];
+    
+    // Add to notifications array
+    notifications.unshift({
+        id: Date.now(),
+        ...randomNotification
+    });
+    
+    // Update badge with animation
+    const badge = document.getElementById('notificationBadge');
+    const currentCount = parseInt(badge.textContent) || 0;
+    badge.textContent = currentCount + 1;
+    badge.style.display = 'flex';
+    
+    // Animate badge
+    badge.style.transform = 'scale(1.3)';
+    setTimeout(() => {
+        badge.style.transform = 'scale(1)';
+    }, 200);
+    
+    // Show brief notification popup if panel is not open
+    if (!document.getElementById('notificationsPanel').classList.contains('active')) {
+        showBriefNotification(randomNotification);
+    }
+}
+
+function showBriefNotification(notification) {
+    const briefNotif = document.createElement('div');
+    briefNotif.className = 'brief-notification';
+    briefNotif.innerHTML = `
+        <div class="brief-notification-content">
+            <div class="brief-avatar" style="background: ${notification.avatar};">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Ctext y='18' font-size='16'%3E👤%3C/text%3E%3C/svg%3E" alt="Usuario">
+            </div>
+            <div class="brief-text">
+                <strong>${notification.user}</strong> ${notification.text}
+            </div>
+        </div>
+    `;
+    
+    briefNotif.style.cssText = `
+        position: fixed;
+        top: 80px;
+        left: 20px;
+        right: 20px;
+        background: #FFFFFF;
+        border: 1px solid #E5E5E5;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        z-index: 150;
+        transform: translateY(-100px);
+        opacity: 0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    `;
+    
+    briefNotif.querySelector('.brief-notification-content').style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    `;
+    
+    briefNotif.querySelector('.brief-avatar').style.cssText = `
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+    
+    briefNotif.querySelector('.brief-text').style.cssText = `
+        flex: 1;
+        font-size: 0.9rem;
+        color: #161823;
+    `;
+    
+    document.body.appendChild(briefNotif);
+    
+    // Animate in
+    setTimeout(() => {
+        briefNotif.style.transform = 'translateY(0)';
+        briefNotif.style.opacity = '1';
+    }, 10);
+    
+    // Auto remove after 4 seconds
+    setTimeout(() => {
+        briefNotif.style.transform = 'translateY(-100px)';
+        briefNotif.style.opacity = '0';
+        setTimeout(() => {
+            if (document.body.contains(briefNotif)) {
+                document.body.removeChild(briefNotif);
+            }
+        }, 300);
+    }, 4000);
+    
+    // Click to open notifications
+    briefNotif.onclick = () => {
+        briefNotif.style.transform = 'translateY(-100px)';
+        briefNotif.style.opacity = '0';
+        setTimeout(() => {
+            if (document.body.contains(briefNotif)) {
+                document.body.removeChild(briefNotif);
+            }
+            openNotifications();
+        }, 300);
+    };
 }
 
 // Messages
