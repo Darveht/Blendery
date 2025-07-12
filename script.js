@@ -746,11 +746,22 @@ function updatePhotoGallery() {
     const gallery = document.querySelector('.photo-gallery') || createPhotoGallery();
     gallery.innerHTML = '';
     
+    // Agregar botón de cerrar
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'gallery-close';
+    closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+    closeBtn.onclick = () => gallery.classList.remove('show');
+    gallery.appendChild(closeBtn);
+    
     // Agregar indicador de progreso
     const progress = document.createElement('div');
     progress.className = `photos-progress ${capturedImages.length === maxImages ? 'complete' : ''}`;
-    progress.textContent = `${capturedImages.length}/${maxImages} fotos`;
+    progress.textContent = `${capturedImages.length}/${maxImages} fotos tomadas`;
     gallery.appendChild(progress);
+    
+    // Contenedor de fotos
+    const photosContainer = document.createElement('div');
+    photosContainer.className = 'gallery-photos-container';
     
     // Crear espacios para las 3 fotos
     for (let i = 0; i < maxImages; i++) {
@@ -763,22 +774,18 @@ function updatePhotoGallery() {
             photoDiv.innerHTML = `
                 <img src="${capturedImages[i]}" alt="Foto ${i + 1}">
                 <div class="photo-counter">${i + 1}</div>
-                <button class="remove-photo" onclick="removePhoto(${i})">×</button>
+                <button class="remove-photo" onclick="removePhoto(${i})" title="Eliminar foto">×</button>
             `;
         } else {
             // Espacio vacío
-            photoDiv.style.background = '#F2F2F2';
-            photoDiv.style.border = '2px dashed #A5A5A5';
-            photoDiv.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #A5A5A5; font-size: 1.2rem;">
-                    <i class="fas fa-camera"></i>
-                </div>
-            `;
+            photoDiv.classList.add('empty');
+            photoDiv.innerHTML = `<i class="fas fa-camera"></i>`;
         }
         
-        gallery.appendChild(photoDiv);
+        photosContainer.appendChild(photoDiv);
     }
     
+    gallery.appendChild(photosContainer);
     gallery.classList.add('show');
 }
 
