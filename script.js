@@ -1,4 +1,3 @@
-
 // Screen Management
 function showWelcomeScreen() {
     hideAllScreens();
@@ -971,12 +970,14 @@ function addNewPostToFeed() {
 
 function saveToDrafts() {
     const imageData = document.getElementById('capturedImage').src;
+    const allImagesData = document.getElementById('capturedImage').dataset.allImages;
     const description = document.getElementById('postDescription').value;
     const timestamp = new Date().toLocaleString();
     
     const draft = {
         id: Date.now(),
         image: imageData,
+        allImages: allImagesData,
         description: description,
         timestamp: timestamp
     };
@@ -986,18 +987,33 @@ function saveToDrafts() {
     drafts.unshift(draft);
     localStorage.setItem('blendery_drafts', JSON.stringify(drafts));
     
+    showNotificationFeedback('Borrador guardado');
     showDraftsScreen();
 }
+
+// Variables para selección de borradores
+let selectionMode = false;
+let selectedDrafts = new Set();
 
 function showDraftsScreen() {
     hideAllScreens();
     document.getElementById('draftsScreen').classList.add('active');
     loadDrafts();
+    resetSelection();
 }
 
 function loadDrafts() {
     const draftsContent = document.getElementById('draftsContent');
+    const draftsCount = document.getElementById('draftsCount');
     const drafts = JSON.parse(localStorage.getItem('blendery_drafts') || '[]');
+    
+    // Actualizar contador
+    if (drafts.length > 0) {
+        draftsCount.textContent = drafts.length;
+        draftsCount.style.display = 'block';
+    } else {
+        draftsCount.style.display = 'none';
+    }
     
     if (drafts.length === 0) {
         draftsContent.innerHTML = `
@@ -1008,28 +1024,160 @@ function loadDrafts() {
             </div>
         `;
     } else {
-        draftsContent.innerHTML = '';
-        drafts.forEach(draft => {
+        draftsContent.innerHTML = `<div class="drafts-grid" id="draftsGrid"></div>`;
+        const draftsGrid = document.getElementById('draftsGrid');
+        
+        drafts.forEach((draft, index) => {
             const draftElement = document.createElement('div');
             draftElement.className = 'draft-item';
-            draftElement.onclick = () => editDraft(draft);
+            draftElement.dataset.draftId = draft.id;
+            draftElement.onclick = (e) => handleDraftClick(e, draft, draftElement);
+            
+            // Obtener todas las imágenes si es un array
+            const images = draft.allImages ? JSON.parse(draft.allImages) : [draft.image];
+            const previewImage = images[0];
+            
             draftElement.innerHTML = `
-                <img src="${draft.image}" class="draft-preview" alt="Draft preview">
+                <img src="${previewImage}" class="draft-preview" alt="Draft preview">
+                <div class="draft-selection-checkbox" ${selectionMode ? 'style="display: flex;"' : ''}>
+                    <i class="fas fa-check" style="display: none;"></i>
+                </div>
                 <div class="draft-info">
                     <h4>${draft.description || 'Sin descripción'}</h4>
                     <span>${draft.timestamp}</span>
                 </div>
             `;
-            draftsContent.appendChild(draftElement);
+            draftsGrid.appendChild(draftElement);
         });
     }
 }
 
+function handleDraftClick(e, draft, element) {
+    if (selectionMode) {
+        e.stopPropagation();
+        toggleDraftSelection(draft.id, element);
+    } else {
+        editDraft(draft);
+    }
+}
+
+function toggleSelectionMode() {
+    selectionMode = !selectionMode;
+    const selectBtn = document.getElementById('selectModeBtn');
+    const checkboxes = document.querySelectorAll('.draft-selection-checkbox');
+    
+    if (selectionMode) {
+        selectBtn.classList.add('active');
+        selectBtn.innerHTML = '<i class="fas fa-times"></i> Cancelar';
+        checkboxes.forEach(checkbox => {
+            checkbox.classList.add('show');
+        });
+    } else {
+        resetSelection();
+    }
+}
+
+function resetSelection() {
+    selectionMode = false;
+    selectedDrafts.clear();
+    
+    const selectBtn = document.getElementById('selectModeBtn');
+    const toolbar = document.getElementById('selectionToolbar');
+    const checkboxes = document.querySelectorAll('.draft-selection-checkbox');
+    const draftItems = document.querySelectorAll('.draft-item');
+    
+    selectBtn.classList.remove('active');
+    selectBtn.innerHTML = '<i class="fas fa-check-square"></i> Seleccionar';
+    toolbar.classList.remove('show');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.classList.remove('show', 'checked');
+        checkbox.querySelector('i').style.display = 'none';
+    });
+    
+    draftItems.forEach(item => {
+        item.classList.remove('selected');
+    });
+    
+    updateSelectionToolbar();
+}
+
+function toggleDraftSelection(draftId, element) {
+    const checkbox = element.querySelector('.draft-selection-checkbox');
+    const checkIcon = checkbox.querySelector('i');
+    
+    if (selectedDrafts.has(draftId)) {
+        selectedDrafts.delete(draftId);
+        element.classList.remove('selected');
+        checkbox.classList.remove('checked');
+        checkIcon.style.display = 'none';
+    } else {
+        selectedDrafts.add(draftId);
+        element.classList.add('selected');
+        checkbox.classList.add('checked');
+        checkIcon.style.display = 'block';
+    }
+    
+    updateSelectionToolbar();
+}
+
+function updateSelectionToolbar() {
+    const toolbar = document.getElementById('selectionToolbar');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    selectedCount.textContent = selectedDrafts.size;
+    
+    if (selectedDrafts.size > 0) {
+        toolbar.classList.add('show');
+    } else {
+        toolbar.classList.remove('show');
+    }
+}
+
+function cancelSelection() {
+    resetSelection();
+}
+
+function deleteSelectedDrafts() {
+    if (selectedDrafts.size === 0) return;
+    
+    const confirmation = confirm(`¿Estás seguro de que quieres eliminar ${selectedDrafts.size} borrador${selectedDrafts.size > 1 ? 'es' : ''}?`);
+    
+    if (confirmation) {
+        let drafts = JSON.parse(localStorage.getItem('blendery_drafts') || '[]');
+        
+        // Filtrar los borradores que no están seleccionados
+        drafts = drafts.filter(draft => !selectedDrafts.has(draft.id));
+        
+        // Guardar la lista actualizada
+        localStorage.setItem('blendery_drafts', JSON.stringify(drafts));
+        
+        // Mostrar feedback
+        showNotificationFeedback(`${selectedDrafts.size} borrador${selectedDrafts.size > 1 ? 'es eliminados' : ' eliminado'}`);
+        
+        // Recargar la vista
+        loadDrafts();
+        resetSelection();
+    }
+}
+
 function editDraft(draft) {
+    if (selectionMode) return;
+    
     currentDraft = draft;
     hideAllScreens();
     document.getElementById('postCreationScreen').classList.add('active');
-    document.getElementById('capturedImage').src = draft.image;
+    
+    // Si tiene múltiples imágenes, usar la primera
+    if (draft.allImages) {
+        const images = JSON.parse(draft.allImages);
+        document.getElementById('capturedImage').src = images[0];
+        document.getElementById('capturedImage').dataset.allImages = draft.allImages;
+    } else {
+        document.getElementById('capturedImage').src = draft.image;
+        document.getElementById('capturedImage').dataset.allImages = JSON.stringify([draft.image]);
+    }
+    
     document.getElementById('postDescription').value = draft.description;
 }
 
