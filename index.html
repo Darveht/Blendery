@@ -720,10 +720,17 @@
     <div id="draftsScreen" class="screen">
         <div class="drafts-container">
             <div class="drafts-header">
-                <button class="back-btn" onclick="showMainScreen()">
-                    <i class="fas fa-chevron-left"></i>
+                <div class="drafts-header-left">
+                    <button class="back-btn" onclick="showMainScreen()">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h2>Borradores</h2>
+                    <div class="drafts-count" id="draftsCount" style="display: none;">0</div>
+                </div>
+                <button class="select-mode-btn" onclick="toggleSelectionMode()" id="selectModeBtn">
+                    <i class="fas fa-check-square"></i>
+                    Seleccionar
                 </button>
-                <h2>Borradores</h2>
             </div>
 
             <div class="drafts-content" id="draftsContent">
@@ -732,6 +739,21 @@
                     <h3>Sin borradores</h3>
                     <p>Tus publicaciones guardadas aparecerán aquí</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- Selection Toolbar -->
+        <div class="selection-toolbar" id="selectionToolbar">
+            <div class="selection-info">
+                <div class="selection-count" id="selectedCount">0</div>
+                <div class="selection-text">seleccionados</div>
+            </div>
+            <div class="selection-actions">
+                <button class="cancel-selection-btn" onclick="cancelSelection()">Cancelar</button>
+                <button class="delete-selected-btn" onclick="deleteSelectedDrafts()">
+                    <i class="fas fa-trash"></i>
+                    Eliminar
+                </button>
             </div>
         </div>
     </div>
