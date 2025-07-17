@@ -532,6 +532,15 @@ function addTextPostToFeed(description) {
     const postSection = document.querySelector('.post-section');
     const newPost = document.createElement('div');
     newPost.className = 'post';
+    // Obtener ubicación si está disponible
+    let locationHTML = '';
+    if (currentLocationData.address) {
+        locationHTML = `<div class="post-location">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>${currentLocationData.address}</span>
+        </div>`;
+    }
+    
     newPost.innerHTML = `
         <div class="post-header">
             <div class="user-info">
@@ -545,6 +554,7 @@ function addTextPostToFeed(description) {
         </div>
         <div class="post-content">
             <p>${description}</p>
+            ${locationHTML}
         </div>
         <div class="post-actions">
             <button onclick="likePost(this)"><i class="far fa-heart"></i> <span>0</span></button>
@@ -569,18 +579,48 @@ function addHashtagsToText() {
 }
 
 function addLocationToText() {
+    const locationElement = document.getElementById('textLocationText');
+    
     if (navigator.geolocation) {
+        locationElement.textContent = 'Obteniendo ubicación...';
+        
         navigator.geolocation.getCurrentPosition(
-            function(position) {
+            async function(position) {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
-                document.getElementById('textLocationText').textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+                
+                try {
+                    const locationName = await reverseGeocode(lat, lon);
+                    locationElement.textContent = locationName.display;
+                    
+                    // Guardar datos de ubicación para la publicación
+                    currentLocationData = {
+                        coordinates: { lat, lon },
+                        address: locationName.address,
+                        city: locationName.city,
+                        country: locationName.country
+                    };
+                } catch (error) {
+                    console.error('Error getting location name:', error);
+                    locationElement.textContent = `📍 ${lat.toFixed(3)}, ${lon.toFixed(3)}`;
+                }
             },
             function(error) {
                 console.error('Error getting location:', error);
-                document.getElementById('textLocationText').textContent = 'Ubicación no disponible';
+                handleLocationError(error, locationElement);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 8000,
+                maximumAge: 300000
             }
         );
+    } else {
+        getLocationByIP().then(() => {
+            if (currentLocationData.address) {
+                locationElement.textContent = `📍 ${currentLocationData.address}`;
+            }
+        });
     }
 }
 
@@ -886,20 +926,236 @@ function showPostCreationScreen(images) {
     getCurrentLocation();
 }
 
+// Variables globales para ubicación
+let currentLocationData = {
+    coordinates: null,
+    address: null,
+    city: null,
+    country: null
+};
+
 function getCurrentLocation() {
+    const locationElement = document.getElementById('locationText');
+    
     if (navigator.geolocation) {
+        locationElement.textContent = 'Obteniendo ubicación...';
+        
         navigator.geolocation.getCurrentPosition(
-            function(position) {
+            async function(position) {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
                 
-                // Simulate getting location name (in real app, use reverse geocoding)
-                document.getElementById('locationText').textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+                currentLocationData.coordinates = { lat, lon };
+                
+                try {
+                    // Usar API gratuita de geocodificación inversa
+                    const locationName = await reverseGeocode(lat, lon);
+                    currentLocationData.address = locationName.address;
+                    currentLocationData.city = locationName.city;
+                    currentLocationData.country = locationName.country;
+                    
+                    locationElement.textContent = locationName.display;
+                } catch (error) {
+                    console.error('Error getting location name:', error);
+                    locationElement.textContent = `📍 ${lat.toFixed(3)}, ${lon.toFixed(3)}`;
+                }
             },
             function(error) {
                 console.error('Error getting location:', error);
+                handleLocationError(error, locationElement);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000 // 5 minutos
             }
         );
+    } else {
+        locationElement.textContent = 'Geolocalización no disponible';
+        // Fallback: usar IP para obtener ubicación aproximada
+        getLocationByIP();
+    }
+}
+
+// Geocodificación inversa usando API gratuita
+async function reverseGeocode(lat, lon) {
+    try {
+        // Usar Nominatim (OpenStreetMap) - API gratuita
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=16&addressdetails=1`,
+            {
+                headers: {
+                    'User-Agent': 'Blendery-App/1.0'
+                }
+            }
+        );
+        
+        if (!response.ok) {
+            throw new Error('Error en la API de geocodificación');
+        }
+        
+        const data = await response.json();
+        
+        if (data && data.address) {
+            const addr = data.address;
+            let displayName = '';
+            let city = '';
+            let country = addr.country || '';
+            
+            // Construir nombre de ubicación legible
+            if (addr.road || addr.pedestrian) {
+                displayName = addr.road || addr.pedestrian;
+            } else if (addr.neighbourhood) {
+                displayName = addr.neighbourhood;
+            } else if (addr.suburb) {
+                displayName = addr.suburb;
+            }
+            
+            if (addr.city) {
+                city = addr.city;
+                if (displayName) {
+                    displayName += `, ${city}`;
+                } else {
+                    displayName = city;
+                }
+            } else if (addr.town) {
+                city = addr.town;
+                if (displayName) {
+                    displayName += `, ${city}`;
+                } else {
+                    displayName = city;
+                }
+            } else if (addr.village) {
+                city = addr.village;
+                if (displayName) {
+                    displayName += `, ${city}`;
+                } else {
+                    displayName = city;
+                }
+            }
+            
+            if (addr.country && displayName.indexOf(addr.country) === -1) {
+                displayName += `, ${addr.country}`;
+            }
+            
+            return {
+                display: `📍 ${displayName || 'Ubicación detectada'}`,
+                address: displayName,
+                city: city,
+                country: country,
+                full: data.display_name
+            };
+        }
+        
+        return {
+            display: `📍 ${lat.toFixed(3)}, ${lon.toFixed(3)}`,
+            address: `${lat.toFixed(3)}, ${lon.toFixed(3)}`,
+            city: '',
+            country: ''
+        };
+        
+    } catch (error) {
+        console.error('Error en geocodificación:', error);
+        return {
+            display: `📍 ${lat.toFixed(3)}, ${lon.toFixed(3)}`,
+            address: `${lat.toFixed(3)}, ${lon.toFixed(3)}`,
+            city: '',
+            country: ''
+        };
+    }
+}
+
+// Obtener ubicación por IP como fallback
+async function getLocationByIP() {
+    try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        
+        if (data && data.city) {
+            const locationText = `📍 ${data.city}, ${data.country_name}`;
+            document.getElementById('locationText').textContent = locationText;
+            
+            currentLocationData = {
+                coordinates: { lat: data.latitude, lon: data.longitude },
+                address: `${data.city}, ${data.country_name}`,
+                city: data.city,
+                country: data.country_name
+            };
+        }
+    } catch (error) {
+        console.error('Error getting location by IP:', error);
+        document.getElementById('locationText').textContent = 'Ubicación no disponible';
+    }
+}
+
+function handleLocationError(error, element) {
+    let message = 'Error obteniendo ubicación';
+    
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            message = 'Permiso de ubicación denegado';
+            // Mostrar modal para explicar cómo habilitar ubicación
+            showLocationPermissionHelp();
+            break;
+        case error.POSITION_UNAVAILABLE:
+            message = 'Ubicación no disponible';
+            break;
+        case error.TIMEOUT:
+            message = 'Tiempo agotado obteniendo ubicación';
+            break;
+    }
+    
+    element.textContent = message;
+    // Intentar fallback por IP
+    setTimeout(() => {
+        getLocationByIP();
+    }, 1000);
+}
+
+function showLocationPermissionHelp() {
+    const modal = document.createElement('div');
+    modal.className = 'location-help-modal';
+    modal.innerHTML = `
+        <div class="modal-overlay" onclick="closeLocationHelp()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Habilitar Ubicación</h3>
+                <button onclick="closeLocationHelp()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="help-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <p>Para compartir tu ubicación en las publicaciones:</p>
+                <ol>
+                    <li>Haz clic en el ícono de candado/ubicación en la barra de direcciones</li>
+                    <li>Selecciona "Permitir" para el acceso a la ubicación</li>
+                    <li>Recarga la página si es necesario</li>
+                </ol>
+                <p><small>Tu privacidad está protegida. Solo compartiremos la ubicación que elijas.</small></p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="closeLocationHelp(); getCurrentLocation();">
+                    Intentar de nuevo
+                </button>
+                <button class="btn-secondary" onclick="closeLocationHelp(); getLocationByIP();">
+                    Usar ubicación aproximada
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+}
+
+function closeLocationHelp() {
+    const modal = document.querySelector('.location-help-modal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(modal);
+        }, 300);
     }
 }
 
@@ -971,6 +1227,15 @@ function addNewPostToFeed() {
         imagesHTML = `<img src="${images[0]}" class="post-image" alt="Foto">`;
     }
     
+    // Obtener ubicación si está disponible
+    let locationHTML = '';
+    if (currentLocationData.address) {
+        locationHTML = `<div class="post-location">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>${currentLocationData.address}</span>
+        </div>`;
+    }
+    
     newPost.innerHTML = `
         <div class="post-header">
             <div class="user-info">
@@ -985,6 +1250,7 @@ function addNewPostToFeed() {
         <div class="post-content">
             <p>${document.getElementById('postDescription').value || '¡Nueva foto!'}</p>
             ${imagesHTML}
+            ${locationHTML}
         </div>
         <div class="post-actions">
             <button onclick="likePost(this)"><i class="far fa-heart"></i> <span>0</span></button>
