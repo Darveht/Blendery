@@ -1,3 +1,32 @@
+
+// Intro Screen Functions
+function showIntroScreen() {
+    const introScreen = document.getElementById('introScreen');
+    introScreen.classList.add('active');
+    
+    // Start the intro sequence
+    setTimeout(() => {
+        completeIntroAnimation();
+    }, 4000); // 4 seconds total intro duration
+}
+
+function completeIntroAnimation() {
+    const introScreen = document.getElementById('introScreen');
+    
+    // Add completion animation
+    introScreen.classList.add('completing');
+    
+    // After expansion animation completes, hide intro and show welcome
+    setTimeout(() => {
+        introScreen.classList.add('hide');
+        setTimeout(() => {
+            introScreen.style.display = 'none';
+            showWelcomeScreen();
+        }, 800);
+    }, 500);
+}
+
+
 // Screen Management
 function showWelcomeScreen() {
     hideAllScreens();
@@ -322,8 +351,8 @@ function viewHashtag(hashtag) {
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
-    // Start with welcome screen
-    showWelcomeScreen();
+    // Start with intro screen
+    showIntroScreen();
     
     // Setup code inputs for verification
     setupCodeInputs();

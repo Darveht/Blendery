@@ -1,3 +1,220 @@
+
+/* ===== INTRO SCREEN STYLES ===== */
+
+.intro-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #FE2C55 0%, #FF7A96 50%, #FFFFFF 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 1;
+    visibility: visible;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.intro-screen.hide {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(1.1);
+}
+
+.intro-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+}
+
+.logo-animation {
+    position: relative;
+    margin-bottom: 40px;
+}
+
+/* Triangles Animation */
+.triangles-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin-bottom: 30px;
+}
+
+.triangle {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    animation: triangleFormation 3s ease-in-out forwards;
+}
+
+.triangle-1 {
+    border-left: 30px solid transparent;
+    border-right: 30px solid transparent;
+    border-bottom: 50px solid #FFFFFF;
+    top: 20px;
+    left: 85px;
+    animation-delay: 0.2s;
+}
+
+.triangle-2 {
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-bottom: 40px solid rgba(255, 255, 255, 0.9);
+    top: 50px;
+    right: 40px;
+    animation-delay: 0.4s;
+}
+
+.triangle-3 {
+    border-left: 35px solid transparent;
+    border-right: 35px solid transparent;
+    border-bottom: 55px solid rgba(255, 255, 255, 0.8);
+    bottom: 60px;
+    right: 60px;
+    animation-delay: 0.6s;
+}
+
+.triangle-4 {
+    border-left: 28px solid transparent;
+    border-right: 28px solid transparent;
+    border-bottom: 45px solid rgba(255, 255, 255, 0.7);
+    bottom: 40px;
+    left: 20px;
+    animation-delay: 0.8s;
+}
+
+.triangle-5 {
+    border-left: 32px solid transparent;
+    border-right: 32px solid transparent;
+    border-bottom: 48px solid rgba(255, 255, 255, 0.6);
+    top: 80px;
+    left: 30px;
+    animation-delay: 1s;
+}
+
+.triangle-6 {
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-bottom: 35px solid rgba(255, 255, 255, 0.5);
+    top: 120px;
+    right: 20px;
+    animation-delay: 1.2s;
+}
+
+@keyframes triangleFormation {
+    0% {
+        opacity: 0;
+        transform: scale(0) rotate(180deg);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1.2) rotate(0deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+/* Logo Text Animation */
+.logo-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #FFFFFF;
+    letter-spacing: -2px;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+}
+
+.letter {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: letterReveal 0.6s ease-out forwards;
+}
+
+.letter:nth-child(1) { animation-delay: 1.4s; }
+.letter:nth-child(2) { animation-delay: 1.5s; }
+.letter:nth-child(3) { animation-delay: 1.6s; }
+.letter:nth-child(4) { animation-delay: 1.7s; }
+.letter:nth-child(5) { animation-delay: 1.8s; }
+.letter:nth-child(6) { animation-delay: 1.9s; }
+.letter:nth-child(7) { animation-delay: 2s; }
+.letter:nth-child(8) { animation-delay: 2.1s; }
+
+@keyframes letterReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Loading Dots */
+.loading-dots {
+    display: flex;
+    gap: 8px;
+    margin-top: 40px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.8);
+    animation: dotPulse 1.5s ease-in-out infinite;
+}
+
+.dot:nth-child(1) { animation-delay: 2.2s; }
+.dot:nth-child(2) { animation-delay: 2.4s; }
+.dot:nth-child(3) { animation-delay: 2.6s; }
+
+@keyframes dotPulse {
+    0%, 20%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+/* Intro completion animation */
+@keyframes introExpand {
+    0% {
+        transform: scale(1);
+        border-radius: 0;
+    }
+    50% {
+        transform: scale(1.05);
+        border-radius: 20px;
+    }
+    100% {
+        transform: scale(1.2);
+        border-radius: 50px;
+        opacity: 0;
+    }
+}
+
+.intro-screen.completing {
+    animation: introExpand 1s ease-in-out forwards;
+}
+
+/* ===== END INTRO SCREEN STYLES ===== */
+
+
+
 /* ===== TikTok Style Theme ===== */
 
 * {
@@ -25,6 +242,14 @@ body {
     display: flex;
     flex-direction: column;
     animation: slideInUp 0.3s ease;
+}
+
+/* Intro screen overrides normal screen behavior */
+.intro-screen {
+    display: flex !important;
+}
+.intro-screen.active {
+    animation: none;
 }
 
 /* Welcome Screen */
