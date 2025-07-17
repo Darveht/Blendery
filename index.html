@@ -541,7 +541,7 @@
                     <i class="fas fa-search"></i>
                     <span>Buscar</span>
                 </div>
-                <div class="nav-item" onclick="switchTab('moments')">
+                <div class="nav-item" onclick="openCamera(true)">
                     <i class="fas fa-clock"></i>
                     <span>Momentos</span>
                 </div>
@@ -800,6 +800,39 @@
         <div class="spinner-container">
             <div class="spinner"></div>
             <p class="loading-text">Cargando...</p>
+        </div>
+    </div>
+
+    <!-- Story Viewer Screen -->
+    <div id="storyViewerScreen" class="screen">
+        <div class="story-viewer-container">
+            <div class="story-header">
+                <div class="story-progress" id="storyProgress"></div>
+                <div class="story-user-info">
+                    <div class="story-user-avatar" id="storyUserAvatar"></div>
+                    <div class="story-user-details">
+                        <span class="story-username" id="storyUsername">Usuario</span>
+                        <span class="story-time" id="storyTime">hace 2h</span>
+                    </div>
+                </div>
+                <div class="story-actions">
+                    <button class="story-views-btn" id="storyViewsBtn" onclick="showStoryViews()">
+                        <i class="fas fa-eye"></i>
+                        <span id="viewsCount">0</span>
+                    </button>
+                    <button class="story-close-btn" onclick="closeStoryViewer()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="story-content">
+                <img id="storyImage" src="" alt="Historia">
+                <div class="story-nav-areas">
+                    <div class="story-nav-left" onclick="prevStoryImage()"></div>
+                    <div class="story-nav-right" onclick="nextStoryImage()"></div>
+                </div>
+            </div>
         </div>
     </div>
 

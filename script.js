@@ -363,6 +363,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize notifications
     updateNotificationCounts();
     
+    // Cargar historias guardadas
+    const savedStories = localStorage.getItem('blendery_stories');
+    if (savedStories) {
+        stories = JSON.parse(savedStories);
+    }
+    
+    // Limpiar historias expiradas
+    cleanExpiredStories();
+    
+    // Actualizar vista de historias
+    setTimeout(() => {
+        updateStoriesView();
+    }, 1000);
+    
     // Start simulating real-time notifications after app loads
     setTimeout(() => {
         simulateRealTimeNotifications();
@@ -430,6 +444,21 @@ document.addEventListener('DOMContentLoaded', function() {
 let capturedImages = [];
 let maxImages = 3;
 let minImages = 3;
+
+// Variables para historias
+let currentStoryMode = false; // false = publicación, true = historia
+let stories = [
+    {
+        id: 1,
+        username: 'Tú',
+        userAvatar: 'linear-gradient(45deg, #FE2C55, #FF7A96)',
+        images: [],
+        timestamp: Date.now(),
+        views: []
+    }
+];
+let currentStoryIndex = 0;
+let currentImageIndex = 0;
 
 // Post interactions
 function likePost(element) {
@@ -636,7 +665,8 @@ let flashEnabled = false;
 let facingMode = 'environment'; // 'user' for front camera, 'environment' for back camera
 let currentDraft = null;
 
-function openCamera() {
+function openCamera(isStory = false) {
+    currentStoryMode = isStory;
     hideAllScreens();
     document.getElementById('cameraScreen').classList.add('active');
     // Resetear imágenes capturadas
@@ -647,8 +677,16 @@ function openCamera() {
         gallery.classList.remove('show');
     }
     
-    // Mostrar mensaje de que necesita tomar 3 fotos
-    alert('Debes tomar exactamente 3 fotos para crear tu publicación');
+    // Mostrar mensaje según el tipo
+    if (isStory) {
+        alert('Creando una historia - Toma 1 foto que durará 24 horas');
+        maxImages = 1;
+        minImages = 1;
+    } else {
+        alert('Debes tomar exactamente 3 fotos para crear tu publicación');
+        maxImages = 3;
+        minImages = 3;
+    }
     
     startCamera();
 }
@@ -908,6 +946,12 @@ function showFlashEffect() {
 }
 
 function showPostCreationScreen(images) {
+    if (currentStoryMode) {
+        // Si es historia, publicar directamente
+        publishStory(images[0]);
+        return;
+    }
+    
     hideAllScreens();
     document.getElementById('postCreationScreen').classList.add('active');
     
@@ -1983,6 +2027,237 @@ function showBriefNotification(notification) {
 // Messages
 function openMessages() {
     alert('Mensajes próximamente...');
+}
+
+// Historias Functions
+function publishStory(imageData) {
+    showLoadingSpinner('Publicando historia...');
+    
+    setTimeout(() => {
+        // Agregar nueva historia
+        const newStory = {
+            id: Date.now(),
+            username: 'Tú',
+            userAvatar: 'linear-gradient(45deg, #FE2C55, #FF7A96)',
+            images: [imageData],
+            timestamp: Date.now(),
+            views: []
+        };
+        
+        // Si ya existe una historia del usuario, agregar imagen, sino crear nueva
+        const userStoryIndex = stories.findIndex(story => story.username === 'Tú');
+        if (userStoryIndex !== -1) {
+            stories[userStoryIndex].images.push(imageData);
+            stories[userStoryIndex].timestamp = Date.now();
+        } else {
+            stories.unshift(newStory);
+        }
+        
+        // Guardar en localStorage
+        localStorage.setItem('blendery_stories', JSON.stringify(stories));
+        
+        hideLoadingSpinner();
+        showMainScreen();
+        
+        // Actualizar vista de historias
+        updateStoriesView();
+        
+        showNotificationFeedback('¡Historia publicada! Visible por 24 horas');
+    }, 2000);
+}
+
+function viewStory(username) {
+    const story = stories.find(s => s.username === username);
+    if (!story || story.images.length === 0) {
+        alert('Esta historia no está disponible');
+        return;
+    }
+    
+    // Marcar como vista si no es tuya
+    if (username !== 'Tú' && !story.views.includes('Tú')) {
+        story.views.push('Tú');
+        localStorage.setItem('blendery_stories', JSON.stringify(stories));
+    }
+    
+    currentStoryIndex = stories.indexOf(story);
+    currentImageIndex = 0;
+    showStoryViewer();
+}
+
+function showStoryViewer() {
+    hideAllScreens();
+    document.getElementById('storyViewerScreen').classList.add('active');
+    updateStoryViewer();
+    startStoryTimer();
+}
+
+function updateStoryViewer() {
+    const story = stories[currentStoryIndex];
+    const image = story.images[currentImageIndex];
+    
+    document.getElementById('storyImage').src = image;
+    document.getElementById('storyUsername').textContent = story.username;
+    document.getElementById('storyUserAvatar').style.background = story.userAvatar;
+    document.getElementById('storyTime').textContent = getTimeAgo(story.timestamp);
+    
+    // Actualizar barras de progreso
+    updateStoryProgress();
+    
+    // Mostrar/ocultar botón de visualizaciones solo para historias propias
+    const viewsBtn = document.getElementById('storyViewsBtn');
+    if (story.username === 'Tú') {
+        viewsBtn.style.display = 'flex';
+        document.getElementById('viewsCount').textContent = story.views.length;
+    } else {
+        viewsBtn.style.display = 'none';
+    }
+}
+
+function updateStoryProgress() {
+    const story = stories[currentStoryIndex];
+    const progressContainer = document.getElementById('storyProgress');
+    progressContainer.innerHTML = '';
+    
+    story.images.forEach((_, index) => {
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+        
+        const progress = document.createElement('div');
+        progress.className = 'progress-fill';
+        
+        if (index < currentImageIndex) {
+            progress.style.width = '100%';
+        } else if (index === currentImageIndex) {
+            progress.style.width = '0%';
+            progress.style.animation = 'storyProgress 5s linear forwards';
+        }
+        
+        progressBar.appendChild(progress);
+        progressContainer.appendChild(progressBar);
+    });
+}
+
+function nextStoryImage() {
+    const story = stories[currentStoryIndex];
+    
+    if (currentImageIndex < story.images.length - 1) {
+        currentImageIndex++;
+        updateStoryViewer();
+    } else {
+        nextStory();
+    }
+}
+
+function prevStoryImage() {
+    if (currentImageIndex > 0) {
+        currentImageIndex--;
+        updateStoryViewer();
+    } else {
+        prevStory();
+    }
+}
+
+function nextStory() {
+    if (currentStoryIndex < stories.length - 1) {
+        currentStoryIndex++;
+        currentImageIndex = 0;
+        updateStoryViewer();
+    } else {
+        closeStoryViewer();
+    }
+}
+
+function prevStory() {
+    if (currentStoryIndex > 0) {
+        currentStoryIndex--;
+        currentImageIndex = 0;
+        updateStoryViewer();
+    }
+}
+
+function closeStoryViewer() {
+    hideAllScreens();
+    document.getElementById('mainScreen').classList.add('active');
+    clearStoryTimer();
+}
+
+let storyTimer;
+function startStoryTimer() {
+    clearStoryTimer();
+    storyTimer = setTimeout(() => {
+        nextStoryImage();
+    }, 5000);
+}
+
+function clearStoryTimer() {
+    if (storyTimer) {
+        clearTimeout(storyTimer);
+        storyTimer = null;
+    }
+}
+
+function updateStoriesView() {
+    const storySection = document.querySelector('.story-section');
+    const storyItems = storySection.querySelectorAll('.story-item:not(.add-story)');
+    
+    // Limpiar historias existentes excepto el botón de agregar
+    storyItems.forEach(item => item.remove());
+    
+    // Agregar historias actuales
+    stories.forEach(story => {
+        if (story.images.length > 0) {
+            const storyItem = document.createElement('div');
+            storyItem.className = 'story-item';
+            storyItem.onclick = () => viewStory(story.username);
+            
+            // Verificar si la historia tiene menos de 24 horas
+            const isExpired = (Date.now() - story.timestamp) > (24 * 60 * 60 * 1000);
+            if (isExpired) return; // No mostrar historias expiradas
+            
+            storyItem.innerHTML = `
+                <div class="story-image" style="background: ${story.userAvatar}; ${story.views.includes('Tú') && story.username !== 'Tú' ? 'opacity: 0.6;' : ''}">
+                    <img src="${story.images[story.images.length - 1]}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                </div>
+                <span>${story.username}</span>
+            `;
+            
+            // Insertar después del botón de agregar
+            const addStory = storySection.querySelector('.add-story');
+            addStory.parentNode.insertBefore(storyItem, addStory.nextSibling);
+        }
+    });
+}
+
+function showStoryViews() {
+    const story = stories[currentStoryIndex];
+    if (story.username !== 'Tú') return;
+    
+    let viewsList = story.views.length > 0 ? story.views.join('\n') : 'Nadie ha visto tu historia aún';
+    alert(`Visto por:\n${viewsList}`);
+}
+
+function getTimeAgo(timestamp) {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor(diff / (1000 * 60));
+    
+    if (hours > 0) {
+        return `hace ${hours}h`;
+    } else if (minutes > 0) {
+        return `hace ${minutes}m`;
+    } else {
+        return 'ahora';
+    }
+}
+
+// Limpiar historias expiradas al cargar
+function cleanExpiredStories() {
+    const now = Date.now();
+    stories = stories.filter(story => {
+        return (now - story.timestamp) < (24 * 60 * 60 * 1000); // 24 horas
+    });
+    localStorage.setItem('blendery_stories', JSON.stringify(stories));
 }
 
 // Add smooth scrolling for story section
