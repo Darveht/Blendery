@@ -1851,6 +1851,7 @@ body {
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
 }
 .location-help-modal.show {
     opacity: 1;
@@ -1862,7 +1863,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
 }
 .location-help-modal .modal-content {
     position: absolute;
@@ -1870,79 +1871,171 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     background: #FFFFFF;
-    border-radius: 16px;
-    padding: 24px;
+    border-radius: 20px;
+    padding: 0;
     width: 90%;
-    max-width: 400px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: modalSlideIn 0.3s ease;
+}
+@keyframes modalSlideIn {
+    from {
+        transform: translate(-50%, -60%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+    }
 }
 .location-help-modal .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 20px;
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid #E5E5E5;
 }
 .location-help-modal .modal-header h3 {
     color: #161823;
-    font-size: 1.2rem;
-    font-weight: 600;
+    font-size: 1.3rem;
+    font-weight: 700;
     margin: 0;
 }
 .location-help-modal .modal-header button {
-    background: none;
+    background: #F2F2F2;
     border: none;
-    font-size: 1.2rem;
-    color: #A5A5A5;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: #161823;
     cursor: pointer;
-    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+.location-help-modal .modal-header button:hover {
+    background: #E5E5E5;
+    transform: scale(1.05);
 }
 .location-help-modal .modal-body {
+    padding: 24px;
     text-align: center;
-    margin-bottom: 24px;
 }
 .location-help-modal .help-icon {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     background: linear-gradient(45deg, #FE2C55, #FF7A96);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 16px;
+    margin: 0 auto 24px;
     color: #FFFFFF;
-    font-size: 1.5rem;
+    font-size: 2rem;
+    box-shadow: 0 8px 24px rgba(254, 44, 85, 0.3);
 }
-.location-help-modal .modal-body p {
+.location-help-modal .help-content h4 {
+    color: #161823;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+.location-help-modal .help-content p {
     color: #161823;
     font-size: 0.95rem;
     margin-bottom: 16px;
     line-height: 1.5;
 }
-.location-help-modal .modal-body ol {
+.location-help-modal .help-content ul {
     text-align: left;
     color: #161823;
     font-size: 0.9rem;
     line-height: 1.6;
+    margin-bottom: 24px;
+    padding-left: 20px;
+}
+.location-help-modal .help-content li {
+    margin-bottom: 8px;
+}
+.location-help-modal .help-steps {
+    text-align: left;
+    margin-bottom: 24px;
+}
+.location-help-modal .help-steps h4 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.location-help-modal .step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
     margin-bottom: 16px;
 }
-.location-help-modal .modal-body small {
-    color: #A5A5A5;
-    font-size: 0.8rem;
+.location-help-modal .step-number {
+    width: 32px;
+    height: 32px;
+    background: #FE2C55;
+    color: #FFFFFF;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+.location-help-modal .step-content {
+    flex: 1;
+}
+.location-help-modal .step-content strong {
+    color: #161823;
+    font-weight: 600;
+}
+.location-help-modal .step-content br {
+    line-height: 1.8;
+}
+.location-help-modal .privacy-note {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #F2F2F2;
+    padding: 16px;
+    border-radius: 12px;
+    margin-top: 20px;
+}
+.location-help-modal .privacy-note i {
+    color: #FE2C55;
+    font-size: 1.2rem;
+}
+.location-help-modal .privacy-note span {
+    color: #161823;
+    font-size: 0.85rem;
+    line-height: 1.4;
 }
 .location-help-modal .modal-actions {
     display: flex;
     gap: 12px;
     flex-direction: column;
+    padding: 24px;
+    border-top: 1px solid #E5E5E5;
 }
 .location-help-modal .btn-primary,
-.location-help-modal .btn-secondary {
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 500;
+.location-help-modal .btn-secondary,
+.location-help-modal .btn-tertiary {
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
     border: none;
     cursor: pointer;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 .location-help-modal .btn-primary {
     background: #FE2C55;
@@ -1950,6 +2043,7 @@ body {
 }
 .location-help-modal .btn-primary:hover {
     background: #E0244B;
+    transform: translateY(-1px);
 }
 .location-help-modal .btn-secondary {
     background: #F2F2F2;
@@ -1957,6 +2051,16 @@ body {
 }
 .location-help-modal .btn-secondary:hover {
     background: #E5E5E5;
+    transform: translateY(-1px);
+}
+.location-help-modal .btn-tertiary {
+    background: transparent;
+    color: #A5A5A5;
+    border: 1px solid #E5E5E5;
+}
+.location-help-modal .btn-tertiary:hover {
+    background: #F2F2F2;
+    color: #161823;
 }
 
 /* Multiple photos selection */

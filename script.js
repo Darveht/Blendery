@@ -1094,22 +1094,25 @@ function handleLocationError(error, element) {
     switch(error.code) {
         case error.PERMISSION_DENIED:
             message = 'Permiso de ubicación denegado';
+            element.textContent = message;
             // Mostrar modal para explicar cómo habilitar ubicación
-            showLocationPermissionHelp();
+            setTimeout(() => {
+                showLocationPermissionHelp();
+            }, 500);
             break;
         case error.POSITION_UNAVAILABLE:
             message = 'Ubicación no disponible';
+            element.textContent = message;
+            // Intentar fallback por IP inmediatamente
+            useApproximateLocation();
             break;
         case error.TIMEOUT:
             message = 'Tiempo agotado obteniendo ubicación';
+            element.textContent = message;
+            // Mostrar opción de reintentar
+            showLocationRetryOption(element);
             break;
     }
-    
-    element.textContent = message;
-    // Intentar fallback por IP
-    setTimeout(() => {
-        getLocationByIP();
-    }, 1000);
 }
 
 function showLocationPermissionHelp() {
@@ -1119,27 +1122,62 @@ function showLocationPermissionHelp() {
         <div class="modal-overlay" onclick="closeLocationHelp()"></div>
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Habilitar Ubicación</h3>
+                <h3>📍 Habilitar Ubicación</h3>
                 <button onclick="closeLocationHelp()"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
                 <div class="help-icon">
                     <i class="fas fa-map-marker-alt"></i>
                 </div>
-                <p>Para compartir tu ubicación en las publicaciones:</p>
-                <ol>
-                    <li>Haz clic en el ícono de candado/ubicación en la barra de direcciones</li>
-                    <li>Selecciona "Permitir" para el acceso a la ubicación</li>
-                    <li>Recarga la página si es necesario</li>
-                </ol>
-                <p><small>Tu privacidad está protegida. Solo compartiremos la ubicación que elijas.</small></p>
+                <div class="help-content">
+                    <h4>¿Por qué necesitamos tu ubicación?</h4>
+                    <p>Blendery usa tu ubicación para:</p>
+                    <ul>
+                        <li>📍 Mostrar donde tomaste tus fotos</li>
+                        <li>🌍 Conectarte con personas cercanas</li>
+                        <li>📱 Mejorar tu experiencia en la app</li>
+                    </ul>
+                    
+                    <div class="help-steps">
+                        <h4>Cómo habilitar la ubicación:</h4>
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <strong>En tu navegador:</strong><br>
+                                Busca el ícono de candado o ubicación en la barra de direcciones
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <strong>Haz clic en "Permitir"</strong><br>
+                                Selecciona la opción para compartir tu ubicación
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <strong>Recarga si es necesario</strong><br>
+                                Actualiza la página para aplicar los cambios
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="privacy-note">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Tu privacidad está protegida. Solo compartiremos la ubicación que elijas y puedes desactivarla en cualquier momento.</span>
+                    </div>
+                </div>
             </div>
             <div class="modal-actions">
-                <button class="btn-primary" onclick="closeLocationHelp(); getCurrentLocation();">
-                    Intentar de nuevo
+                <button class="btn-primary" onclick="closeLocationHelp(); retryLocationAccess();">
+                    <i class="fas fa-sync-alt"></i> Intentar de nuevo
                 </button>
-                <button class="btn-secondary" onclick="closeLocationHelp(); getLocationByIP();">
-                    Usar ubicación aproximada
+                <button class="btn-secondary" onclick="closeLocationHelp(); useApproximateLocation();">
+                    <i class="fas fa-globe"></i> Usar ubicación aproximada
+                </button>
+                <button class="btn-tertiary" onclick="closeLocationHelp(); skipLocation();">
+                    <i class="fas fa-times"></i> Saltar por ahora
                 </button>
             </div>
         </div>
@@ -1154,9 +1192,71 @@ function closeLocationHelp() {
     if (modal) {
         modal.classList.remove('show');
         setTimeout(() => {
-            document.body.removeChild(modal);
+            if (document.body.contains(modal)) {
+                document.body.removeChild(modal);
+            }
         }, 300);
     }
+}
+
+function retryLocationAccess() {
+    // Reintentar obtener ubicación con configuración más permisiva
+    if (navigator.geolocation) {
+        const locationElement = document.getElementById('locationText') || document.getElementById('textLocationText');
+        if (locationElement) {
+            locationElement.textContent = 'Reintentando ubicación...';
+            getCurrentLocation();
+        }
+    } else {
+        useApproximateLocation();
+    }
+}
+
+function useApproximateLocation() {
+    const locationElement = document.getElementById('locationText') || document.getElementById('textLocationText');
+    if (locationElement) {
+        locationElement.textContent = 'Obteniendo ubicación aproximada...';
+    }
+    getLocationByIP();
+}
+
+function skipLocation() {
+    const locationElement = document.getElementById('locationText') || document.getElementById('textLocationText');
+    if (locationElement) {
+        locationElement.textContent = 'Ubicación omitida';
+    }
+    // Limpiar datos de ubicación
+    currentLocationData = {
+        coordinates: null,
+        address: null,
+        city: null,
+        country: null
+    };
+}
+
+function showLocationRetryOption(element) {
+    const retryBtn = document.createElement('button');
+    retryBtn.textContent = '🔄 Reintentar';
+    retryBtn.className = 'location-retry-btn';
+    retryBtn.onclick = () => {
+        retryBtn.remove();
+        getCurrentLocation();
+    };
+    
+    retryBtn.style.cssText = `
+        background: #FE2C55;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 16px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-left: 12px;
+        transition: all 0.2s ease;
+    `;
+    
+    element.parentNode.appendChild(retryBtn);
 }
 
 function addHashtags() {
